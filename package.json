@@ -1,0 +1,50 @@
+{
+  "name": "discord-station",
+  "version": "1.0.0",
+  "main": "app.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "pm2 start ecosystem.config.js",
+    "build": "next build"
+  },
+  "dependencies": {
+    "@material-ui/core": "^4.1.1",
+    "@material-ui/styles": "^4.1.1",
+    "@types/material-ui": "^0.21.6",
+    "bluebird": "^3.5.5",
+    "koa": "^2.7.0",
+    "koa-body": "^4.1.0",
+    "koa-generic-session": "^2.0.1",
+    "koa-generic-session-sequelize": "^2.2.0",
+    "koa-logger": "^3.2.0",
+    "koa-router": "^7.4.0",
+    "log4js": "^4.3.2",
+    "mkdirp": "^0.5.1",
+    "music-metadata": "^4.2.1",
+    "mysql2": "^1.6.5",
+    "next": "^8.1.0",
+    "next-redux-wrapper": "^3.0.0-alpha.3",
+    "pm2": "^3.5.1",
+    "prop-types": "^15.7.2",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-redux": "^7.1.0",
+    "redux": "^4.0.1",
+    "redux-starter-kit": "^0.5.1",
+    "sequelize": "^5.8.11",
+    "sequelize-cli": "^5.5.0",
+    "sqlite3": "^4.0.9",
+    "xo": "^0.24.0"
+  },
+  "xo": {
+    "ignores": [
+      "ecosystem.config.js"
+    ],
+    "extends": "xo-react"
+  },
+  "devDependencies": {
+    "eslint-config-xo-react": "^0.19.0",
+    "eslint-plugin-react": "^7.13.0",
+    "eslint-plugin-react-hooks": "^1.6.0"
+  }
+}
