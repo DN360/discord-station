@@ -2295,7 +2295,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var _jsxFileName = "/mnt/d/MLAB/Node.js/discord-station/pages/_document.jsx";
+var _jsxFileName = "/mnt/c/Users/mon_n/workspace/node/discord-station/pages/_document.jsx";
 
 
 

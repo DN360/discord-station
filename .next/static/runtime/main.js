@@ -6671,7 +6671,7 @@ function connect(options) {
       error.name = err.name;
       error.stack = err.stack; // __NEXT_DIST_DIR is provided by webpack
 
-      source_map_support_1.rewriteStacktrace(error, "/mnt/d/MLAB/Node.js/discord-station/.next");
+      source_map_support_1.rewriteStacktrace(error, "/mnt/c/Users/mon_n/workspace/node/discord-station/.next");
       return error;
     }
   };

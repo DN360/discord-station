@@ -11,7 +11,11 @@ module.exports = {
 				type: Sequelize.INTEGER
 			},
 			path: {
-				type: Sequelize.STRING
+				type: Sequelize.STRING,
+				unique: true
+			},
+			album_id: {
+				type: Sequelize.INTEGER
 			},
 			created_at: {
 				allowNull: false,

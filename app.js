@@ -4,6 +4,7 @@ const Koa = require('koa');
 const next = require('next');
 const koaBody = require('koa-body');
 const koaLogger = require('koa-logger');
+const range = require('koa-range');
 const log4js = require('log4js');
 const session = require('koa-generic-session');
 const SequelizeStore = require('koa-generic-session-sequelize');
@@ -12,6 +13,7 @@ const BPromise = require('bluebird');
 const models = require('./models');
 let appConfig = require('./config/app.config.json');
 const appConfigSample = require('./config/app.config.sample');
+const helper = require('./libs/helper');
 
 for (const configKey of Object.keys(appConfigSample)) {
 	if (!appConfig[configKey]) {
@@ -75,6 +77,7 @@ const start = async () => {
 			}
 		})
 		.use(koaLogger())
+		.use(range)
 		.use(koaBody({
 			multipart: true,
 			formidable: {
@@ -86,7 +89,7 @@ const start = async () => {
 			ctx.seq = models.sequelize;
 			ctx.models = models.sequelize.models;
 			ctx.app = nextApp;
-			ctx.helper = ctx.helper || {};
+			ctx.helper = helper;
 			ctx.helper.mkdirSync = mkdirSync;
 			await next();
 		})

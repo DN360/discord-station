@@ -14,6 +14,9 @@ module.exports = {
 				type: Sequelize.STRING,
 				unique: true
 			},
+			pic_id: {
+				type: Sequelize.INTEGER
+			},
 			created_at: {
 				allowNull: false,
 				type: Sequelize.DATE
