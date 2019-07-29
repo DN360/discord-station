@@ -3,7 +3,9 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
 	const artists = sequelize.define('artists', {
-		name: DataTypes.STRING
+		name: DataTypes.STRING,
+		created_at: DataTypes.DATE,
+		updated_at: DataTypes.DATE
 	}, {
 		underscored: true
 	});

@@ -1,4 +1,5 @@
 /* eslint camelcase: ["error", {properties: "never"}] */
+/* eslint new-cap: ["error", {properties: false}] */
 
 'use strict';
 module.exports = (sequelize, DataTypes) => {
@@ -6,7 +7,11 @@ module.exports = (sequelize, DataTypes) => {
 		name: DataTypes.STRING,
 		artist_id: DataTypes.INTEGER,
 		album_id: DataTypes.INTEGER,
-		pic_id: DataTypes.INTEGER
+		pic_id: DataTypes.INTEGER,
+		path: DataTypes.TEXT,
+		status: DataTypes.ENUM('create', 'ready', 'invalid'),
+		created_at: DataTypes.DATE,
+		updated_at: DataTypes.DATE
 	}, {
 		underscored: true
 	});

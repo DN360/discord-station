@@ -1,2 +1,4 @@
 /node_modules
 /database
+/.next
+/databases/music_server.sqlite

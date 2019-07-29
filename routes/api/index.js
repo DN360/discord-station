@@ -1,9 +1,29 @@
 const KoaRouter = require('koa-router');
 const songRouter = require('./song');
+const albumRouter = require('./album');
+const artistRouter = require('./artist');
+const authRouter = require('./auth');
+const picRouter = require('./pic');
 
 const router = new KoaRouter();
 
-router.use('/song', songRouter.routes(), songRouter.allowedMethods())
+const loginCheck = async (ctx, next) => {
+	if (ctx.session.is_logged_in) {
+		await next();
+	} else {
+		ctx.status = 401;
+		ctx.body = {
+			status: 'error',
+			message: 'need authorize'
+		};
+	}
+};
+
+router.use('/song', loginCheck, songRouter.routes(), songRouter.allowedMethods())
+	.use('/artist', loginCheck, artistRouter.routes(), artistRouter.allowedMethods())
+	.use('/pic', loginCheck, picRouter.routes(), picRouter.allowedMethods())
+	.use('/album', loginCheck, albumRouter.routes(), albumRouter.allowedMethods())
+	.use('/auth', authRouter.routes(), authRouter.allowedMethods())
 	.all('*', ctx => {
 		ctx.status = 501;
 		ctx.body = {

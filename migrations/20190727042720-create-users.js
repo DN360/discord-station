@@ -1,10 +1,9 @@
 /* eslint camelcase: ["error", {properties: "never"}] */
 /* eslint new-cap: ["error", {properties: false}] */
-
 'use strict';
 module.exports = {
 	up: (queryInterface, Sequelize) => {
-		return queryInterface.createTable('songs', {
+		return queryInterface.createTable('users', {
 			id: {
 				allowNull: false,
 				autoIncrement: true,
@@ -12,25 +11,20 @@ module.exports = {
 				type: Sequelize.INTEGER
 			},
 			name: {
-				type: Sequelize.STRING,
-				unique: 'name_artist_album'
+				type: Sequelize.STRING
 			},
-			artist_id: {
-				type: Sequelize.INTEGER,
-				unique: 'name_artist_album'
+			password: {
+				type: Sequelize.STRING
 			},
-			album_id: {
-				type: Sequelize.INTEGER,
-				unique: 'name_artist_album'
+			uuid: {
+				type: Sequelize.UUID,
+				defaultValue: Sequelize.UUIDV4
+			},
+			status: {
+				type: Sequelize.ENUM('valid', 'invalid', 'admin')
 			},
 			pic_id: {
 				type: Sequelize.INTEGER
-			},
-			path: {
-				type: Sequelize.TEXT
-			},
-			status: {
-				type: Sequelize.ENUM('create', 'ready', 'invalid')
 			},
 			created_at: {
 				allowNull: false,
@@ -40,15 +34,9 @@ module.exports = {
 				allowNull: false,
 				type: Sequelize.DATE
 			}
-		}, {
-			uniqueKeys: {
-				name_artist_album: {
-					fields: ['name', 'artist_id', 'album_id']
-				}
-			}
 		});
 	},
 	down: queryInterface => {
-		return queryInterface.dropTable('songs');
+		return queryInterface.dropTable('users');
 	}
 };

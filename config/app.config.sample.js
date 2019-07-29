@@ -1,4 +1,5 @@
 module.exports = {
-	UPLOADDIR: '/mnt/station'
+	UPLOADDIR: '/mnt/station',
+	PASSWORDSALT: ''
 };
 

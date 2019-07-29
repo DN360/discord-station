@@ -11,7 +11,7 @@ module.exports = {
     args: "",
     instances: 1,
     autorestart: true,
-    watch: ["routes", "app.js", "models"],
+    watch: ["routes", "app.js", "models", "libs/helper.js"],
     mode: "fork",
     max_memory_restart: '1G',
     env: {

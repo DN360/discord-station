@@ -3,7 +3,10 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
 	const albums = sequelize.define('albums', {
-		name: DataTypes.STRING
+		name: DataTypes.STRING,
+		pic_id: DataTypes.INTEGER,
+		created_at: DataTypes.DATE,
+		updated_at: DataTypes.DATE
 	}, {
 		underscored: true
 	});
@@ -12,6 +15,10 @@ module.exports = (sequelize, DataTypes) => {
 		albums.hasMany(models.songs, {
 			sourceKey: 'id',
 			targetKey: 'album_id'
+		});
+		albums.belongsTo(models.pics, {
+			sourceKey: 'pic_id',
+			targetKey: 'id'
 		});
 	};
 

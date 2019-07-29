@@ -5,7 +5,7 @@
     "database": "database_development",
     "host": "127.0.0.1",
     "dialect": "sqlite",
-    "operatorsAliases": false,
+    "operatorsAliases": "Op",
     "storage": "databases/music_server.sqlite"
   },
   "test": {
@@ -14,7 +14,7 @@
     "database": "database_test",
     "host": "127.0.0.1",
     "dialect": "mysql",
-    "operatorsAliases": false
+    "operatorsAliases": "Op"
   },
   "production": {
     "username": "root",
@@ -22,6 +22,6 @@
     "database": "database_production",
     "host": "127.0.0.1",
     "dialect": "mysql",
-    "operatorsAliases": false
+    "operatorsAliases": "Op"
   }
 }
