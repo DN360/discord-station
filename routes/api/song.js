@@ -467,7 +467,7 @@ const updateSong = async ctx => {
 	}
 };
 
-const getListSong = async ctx => {
+const getSongList = async ctx => {
 	const {like, or: Or} = ctx.Seq.Op;
 	const {page: requestPage, count: requestCount, q: searchQuery, artistid, albumid} = ctx.query;
 	const page = requestPage === undefined ? 0 : Number(requestPage);
@@ -688,7 +688,7 @@ router.patch('/:id', patchSong);
 router.post('/:id', updateSong);
 router.get('/:id', getSong);
 router.get('/meta/:id', getSongMetadata);
-router.get('/', getListSong);
+router.get('/', getSongList);
 router.delete('/:id', deleteSongMetadata);
 
 module.exports = router;

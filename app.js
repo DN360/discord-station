@@ -46,6 +46,8 @@ const routes = require('./routes');
 
 const sequelizeConfig = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'config', 'config.json')));
 
+app.keys = ['discord-station', 'discord-station_secret'];
+
 const start = async () => {
 	await nextApp.prepare();
 
@@ -63,8 +65,6 @@ const start = async () => {
 	if (!fs.existsSync(sequelizeConfig[process.env.NODE_ENV].storage)) {
 		fs.writeFileSync(sequelizeConfig[process.env.NODE_ENV].storage, '');
 	}
-
-	app.keys = ['discord-station', 'discord-station_secret'];
 
 	app
 		.use(async (ctx, next) => {
@@ -91,9 +91,10 @@ const start = async () => {
 			ctx.seq = models.sequelize;
 			ctx.Seq = models.Sequelize;
 			ctx.models = models.sequelize.models;
-			ctx.app = nextApp;
+			ctx.nextApp = nextApp;
 			ctx.helper = helper;
 			ctx.helper.mkdirSync = mkdirSync;
+
 			await next();
 		})
 		.use(session({
