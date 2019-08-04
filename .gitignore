@@ -2,3 +2,4 @@
 /database
 /.next
 /databases/music_server.sqlite
+/tmp/*
