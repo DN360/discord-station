@@ -26,6 +26,9 @@ module.exports = {
 			pic_id: {
 				type: Sequelize.INTEGER
 			},
+			user_id: {
+				type: Sequelize.INTEGER
+			},
 			path: {
 				type: Sequelize.TEXT
 			},

@@ -13,6 +13,9 @@ module.exports = {
 			name: {
 				type: Sequelize.STRING
 			},
+			email: {
+				type: Sequelize.STRING
+			},
 			password: {
 				type: Sequelize.STRING
 			},
@@ -21,7 +24,7 @@ module.exports = {
 				defaultValue: Sequelize.UUIDV4
 			},
 			status: {
-				type: Sequelize.ENUM('valid', 'invalid', 'admin')
+				type: Sequelize.ENUM('valid', 'invalid', 'admin', 'progress')
 			},
 			pic_id: {
 				type: Sequelize.INTEGER

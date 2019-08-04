@@ -7,11 +7,7 @@ const router = new KoaRouter();
 
 const getPicList = async ctx => {
 	/* eslint camelcase: ["error", {properties: "never"}] */
-	const pictureList = await ctx.models.pics.findAll({
-		include: [
-			{model: ctx.models.albums, attributes: ['name']}
-		]
-	}).then(pics => pics.map(pic => ({
+	const pictureList = await ctx.models.pics.findAll().then(pics => pics.map(pic => ({
 		id: pic.id,
 		album_id: pic.album_id,
 		album: pic.album.name

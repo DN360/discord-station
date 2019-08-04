@@ -4,6 +4,7 @@ const albumRouter = require('./album');
 const artistRouter = require('./artist');
 const authRouter = require('./auth');
 const picRouter = require('./pic');
+const userRouter = require('./user');
 
 const router = new KoaRouter();
 
@@ -24,6 +25,7 @@ router.use('/song', loginCheck, songRouter.routes(), songRouter.allowedMethods()
 	.use('/pic', loginCheck, picRouter.routes(), picRouter.allowedMethods())
 	.use('/album', loginCheck, albumRouter.routes(), albumRouter.allowedMethods())
 	.use('/auth', authRouter.routes(), authRouter.allowedMethods())
+	.use('/user', userRouter.routes(), userRouter.allowedMethods())
 	.all('*', ctx => {
 		ctx.status = 501;
 		ctx.body = {

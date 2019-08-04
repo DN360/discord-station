@@ -7,13 +7,19 @@ import {ThemeProvider} from '@material-ui/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import withRedux from 'next-redux-wrapper';
 import {reducer as rootReducer} from '../ducks';
+import * as authModule from '../ducks/auth';
 import theme from './src/theme';
 
 class MyApp extends App {
 	static async getInitialProps({Component, ctx}) {
+		if (ctx.req) {
+			ctx.store.dispatch(authModule.initial(ctx.req.isLoggedIn, ctx.req.isAdmin, ctx.req.userId));
+		}
+
 		const pageProps = Component.getInitialProps ?
 			await Component.getInitialProps(ctx) :
 			{};
+
 		return {pageProps};
 	}
 

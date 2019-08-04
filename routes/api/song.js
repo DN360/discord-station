@@ -90,6 +90,7 @@ const insertToDB = async ({ctx, album, artist, pictureName, createdPath, picture
 			artist_id: artistData.id,
 			album_id: albumData.id,
 			pic_id: pictureData ? pictureData.id : undefined,
+			user_id: ctx.session.user_id,
 			path: copyToPath,
 			status
 		},
@@ -151,8 +152,8 @@ const createSong = async ctx => {
 
 		return {
 			title: title || path.basename(ctx.request.files.file.name).replace(path.extname(ctx.request.files.file.name), ''),
-			artist: artist || 'tempArtist_' + ctx.helper.dateToString(Date.now()),
-			album: album || 'tempAlbum_' + ctx.helper.dateToString(Date.now()),
+			artist: artist || '',
+			album: album || '',
 			copyToPath, pictures, createdPath, tmpPath, status: 'created'};
 	}).then(async ({copyToPath, title, artist, album, pictures, createdPath, tmpPath, status}) => {
 		let pictureName;
@@ -469,7 +470,7 @@ const updateSong = async ctx => {
 
 const getSongList = async ctx => {
 	const {like, or: Or} = ctx.Seq.Op;
-	const {page: requestPage, count: requestCount, q: searchQuery, artistid, albumid} = ctx.query;
+	const {page: requestPage, count: requestCount, q: searchQuery, artistid, albumid, userid} = ctx.query;
 	const page = requestPage === undefined ? 0 : Number(requestPage);
 	const count = requestCount === undefined ? 10 : Number(requestCount);
 	ctx.logger.trace(`Request page: ${page}, and show number: ${count}`);
@@ -510,11 +511,19 @@ const getSongList = async ctx => {
 		};
 	}
 
+	if (userid !== undefined) {
+		whereQuery = {
+			...whereQuery,
+			'$user.id$': userid
+		};
+	}
+
 	const songCount = await ctx.models.songs.findAll({
 		where: whereQuery,
 		include: [
 			{model: ctx.models.albums, attributes: ['name']},
-			{model: ctx.models.artists, attributes: ['name']}
+			{model: ctx.models.artists, attributes: ['name']},
+			{model: ctx.models.users, attributes: ['name']}
 		]
 	}).then(songs => songs.length);
 	const maxPage = songCount === 0 ? 0 : songCount % count === 0 ? (songCount / count) - 1 : (songCount - (songCount % count)) / count;
@@ -526,10 +535,11 @@ const getSongList = async ctx => {
 		limit: count,
 		offset: count * page,
 		order: [['created_at', 'DESC']],
-		attributes: ['id', 'name', 'album_id', 'artist_id', 'pic_id', 'path'],
+		attributes: ['id', 'name', 'album_id', 'artist_id', 'pic_id', 'user_id', 'path'],
 		include: [
 			{model: ctx.models.albums, attributes: ['name']},
-			{model: ctx.models.artists, attributes: ['name']}
+			{model: ctx.models.artists, attributes: ['name']},
+			{model: ctx.models.users, attributes: ['name']}
 		]
 	}).then(songs => songs.map(song => ({
 		title: song.name,
@@ -538,6 +548,7 @@ const getSongList = async ctx => {
 		album_id: song.album_id,
 		artist_id: song.artist_id,
 		pic_id: song.pic_id,
+		user_id: song.user_id,
 		id: song.id
 	})));
 	ctx.body = {
@@ -683,9 +694,9 @@ const deleteSongMetadata = async ctx => {
 	}
 };
 
-router.put('/', createSong);
+router.post('/', createSong);
 router.patch('/:id', patchSong);
-router.post('/:id', updateSong);
+router.put('/:id', updateSong);
 router.get('/:id', getSong);
 router.get('/meta/:id', getSongMetadata);
 router.get('/', getSongList);

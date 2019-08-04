@@ -13,11 +13,12 @@ module.exports = {
 		return queryInterface.bulkInsert('users', [{
 			id: 0,
 			name: 'admin',
+			email: 'admin@example.com',
 			password,
 			uuid: uuidv4(),
 			status: 'admin',
-			created_at: helper.dateToString(Date.now()),
-			updated_at: helper.dateToString(Date.now())
+			created_at: helper.dateToString(Date.now() - (1000 * 60 * 60 * 9)),
+			updated_at: helper.dateToString(Date.now() - (1000 * 60 * 60 * 9))
 		}]);
 	},
 

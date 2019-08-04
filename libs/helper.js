@@ -13,4 +13,3 @@ module.exports.passwordHash = str => {
 	const md5hash = crypt.createHash('md5');
 	return md5hash.update(str + share.PASSWORDSALT, 'binary').digest('hex');
 };
-

@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) => {
 		artist_id: DataTypes.INTEGER,
 		album_id: DataTypes.INTEGER,
 		pic_id: DataTypes.INTEGER,
+		user_id: DataTypes.INTEGER,
 		path: DataTypes.TEXT,
 		status: DataTypes.ENUM('create', 'ready', 'invalid'),
 		created_at: DataTypes.DATE,
@@ -27,6 +28,10 @@ module.exports = (sequelize, DataTypes) => {
 		});
 		songs.belongsTo(models.pics, {
 			sourceKey: 'pic_id',
+			targetKey: 'id'
+		});
+		songs.belongsTo(models.users, {
+			sourceKey: 'user_id',
 			targetKey: 'id'
 		});
 	};

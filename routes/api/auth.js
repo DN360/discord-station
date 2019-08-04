@@ -26,7 +26,7 @@ const login = async ctx => {
 		where: {
 			name: username
 		},
-		attributes: ['name', 'password', 'id']
+		attributes: ['name', 'password', 'id', 'status']
 	});
 	if (!userData) {
 		ctx.status = 400;
@@ -42,6 +42,7 @@ const login = async ctx => {
 	if (hashedPassword === userData.password) {
 		ctx.session.is_logged_in = true;
 		ctx.session.user_id = userData.id;
+		ctx.session.is_admin = userData.status === 'admin';
 		ctx.status = 200;
 		ctx.body = {
 			status: 'success',
@@ -56,7 +57,15 @@ const login = async ctx => {
 	}
 };
 
+const logout = async ctx => {
+	ctx.session.is_logged_in = undefined;
+	ctx.session.user_id = undefined;
+	ctx.session.is_admin = undefined;
+	ctx.redirect('/login');
+};
+
 router.post('/', login);
+router.get('/logout', logout);
 
 module.exports = router;
 
