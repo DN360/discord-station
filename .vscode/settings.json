@@ -4,6 +4,12 @@
     "xo.options": {
         "ignores": [
             "ecosystem.config.js"
+        ],
+        "globals": [
+            "window",
+            "document",
+            "fetch",
+            "alert"
         ]
     }
 }

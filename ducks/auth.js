@@ -13,8 +13,8 @@ export default function reducer(state = initialState, action) {
 		case INITIAL:
 			return {
 				...state,
-				isLoggedIn: action.isLoggedIn || state.isLoggedIn,
-				isAdmin: action.isAdmin || state.isAdmin,
+				isLoggedIn: action.isLoggedIn === undefined ? state.isLoggedIn : action.isLoggedIn,
+				isAdmin: action.isAdmin === undefined ? state.isAdmin : action.isAdmin,
 				userId: action.userId === undefined ? state.userId : action.userId
 			};
 		default:

@@ -46,7 +46,12 @@ const login = async ctx => {
 		ctx.status = 200;
 		ctx.body = {
 			status: 'success',
-			message: 'OK'
+			message: 'OK',
+			data: {
+				isLoggedIn: true,
+				isAdmin: userData.status === 'admin',
+				userId: userData.id
+			}
 		};
 	} else {
 		ctx.status = 400;

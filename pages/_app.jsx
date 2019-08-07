@@ -1,3 +1,5 @@
+/* global document */
+
 import React from 'react';
 import {configureStore} from 'redux-starter-kit';
 import {Provider} from 'react-redux';
@@ -37,6 +39,14 @@ class MyApp extends App {
 				</ThemeProvider>
 			</NextContainer>
 		);
+	}
+
+	componentDidMount() {
+		// Remove the server-side injected CSS.
+		const jssStyles = document.querySelector('#jss-server-side');
+		if (jssStyles) {
+			jssStyles.parentNode.removeChild(jssStyles);
+		}
 	}
 }
 
