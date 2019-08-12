@@ -44,7 +44,10 @@ const getUserData = async ctx => {
 	const userData = await ctx.models.users.findOne({
 		where: {
 			id
-		}
+		},
+		include: [
+			{model: ctx.models.songs, attributes: ['id']}
+		]
 	});
 	if (userData === null) {
 		ctx.status = 404;
@@ -62,9 +65,11 @@ const getUserData = async ctx => {
 		data: {
 			id: userData.id,
 			name: userData.name,
+			email: userData.email,
 			status: userData.status,
 			uuid: userData.uuid,
 			pic_id: userData.pic_id,
+			song_count: userData.songs.length,
 			created_at: ctx.helper.dateToString(userData.created_at)
 		}
 	};
@@ -219,7 +224,7 @@ const updateUser = async ctx => {
 		return false;
 	}
 
-	const updateQuery = [];
+	const updateQuery = {};
 
 	if (password !== undefined && password !== '') {
 		if ((confirmpassword === undefined || confirmpassword === '') && !ctx.session.is_admin) {
@@ -271,16 +276,17 @@ const updateUser = async ctx => {
 			});
 			updateQuery.pic_id = pictureData.id;
 		} else {
-			ctx.logger.trace(userDataInDB.pic_id);
 			const pictureData = await ctx.models.pics.findOne({
 				where: {
 					id: userDataInDB.pic_id
 				}
 			});
+			updateQuery.pic_id = pictureData.id;
 			newPicturePath = pictureData.path;
 		}
 
 		fs.copyFileSync(files.file.path, newPicturePath);
+		fs.unlinkSync(files.file.path);
 	}
 
 	await ctx.models.users.update(updateQuery, {
@@ -292,6 +298,7 @@ const updateUser = async ctx => {
 		ctx.body = {
 			status: 'success',
 			message: 'updated',
+			data: updateQuery,
 			id
 		};
 	}).catch(error => {

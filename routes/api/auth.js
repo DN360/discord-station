@@ -3,6 +3,7 @@ const KoaRouter = require('koa-router');
 const router = new KoaRouter();
 
 const login = async ctx => {
+	const {or: Or} = ctx.Seq.Op;
 	if (ctx.request.type !== 'application/json') {
 		ctx.status = 400;
 		ctx.body = {
@@ -24,7 +25,10 @@ const login = async ctx => {
 
 	const userData = await ctx.models.users.findOne({
 		where: {
-			name: username
+			[Or]: {
+				name: username,
+				email: username
+			}
 		},
 		attributes: ['name', 'password', 'id', 'status']
 	});
@@ -46,7 +50,12 @@ const login = async ctx => {
 		ctx.status = 200;
 		ctx.body = {
 			status: 'success',
-			message: 'OK'
+			message: 'OK',
+			data: {
+				isLoggedIn: true,
+				isAdmin: userData.status === 'admin',
+				userId: userData.id
+			}
 		};
 	} else {
 		ctx.status = 400;

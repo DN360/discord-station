@@ -1,3 +1,5 @@
+/* global document */
+
 import React from 'react';
 import {configureStore} from 'redux-starter-kit';
 import {Provider} from 'react-redux';
@@ -9,6 +11,8 @@ import withRedux from 'next-redux-wrapper';
 import {reducer as rootReducer} from '../ducks';
 import * as authModule from '../ducks/auth';
 import theme from './src/theme';
+import AppBar from './src/app-bar.jsx';
+import PlayerBar from './src/player-bar.jsx';
 
 class MyApp extends App {
 	static async getInitialProps({Component, ctx}) {
@@ -30,13 +34,23 @@ class MyApp extends App {
 				<ThemeProvider theme={theme}>
 					<CssBaseline/>
 					<Provider store={store}>
-						<Container>
+						<Container maxWidth="xl">
+							<AppBar/>
 							<Component {...pageProps}/>
+							<PlayerBar/>
 						</Container>
 					</Provider>
 				</ThemeProvider>
 			</NextContainer>
 		);
+	}
+
+	componentDidMount() {
+		// Remove the server-side injected CSS.
+		const jssStyles = document.querySelector('#jss-server-side');
+		if (jssStyles) {
+			jssStyles.parentNode.removeChild(jssStyles);
+		}
 	}
 }
 

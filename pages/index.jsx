@@ -1,41 +1,83 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {connect} from 'react-redux';
-import Link from 'next/link';
+import {makeStyles} from '@material-ui/styles';
 import Button from '@material-ui/core/Button';
-import PropTypes from 'prop-types';
+import Container from '@material-ui/core/Container';
 import Router from 'next/router';
-import * as counterModule from '../ducks/counter';
+import Grid from '@material-ui/core/Grid';
+import PropTypes from 'prop-types';
+import {Typography} from '@material-ui/core';
+import * as songModule from '../ducks/song';
+import * as playerModule from '../ducks/player';
+import SongCard from './src/song-card.jsx';
+
+const useStyles = makeStyles(theme => ({
+	root: {
+		margin: theme.spacing(0)
+	},
+	title: {
+		marginTop: theme.spacing(2)
+	}
+}));
 
 const App = props => {
+	const classes = useStyles();
+	const [songs, setSongs] = useState(props.songList);
+	useEffect(() => {
+		fetch('/api/v1/song').then(x => x.json()).then(resp => {
+			setSongs(resp.songs);
+		});
+	}, []);
+	useEffect(() => {
+		setSongs(props.songList);
+	}, [props.songList]);
+
+	const cardOnClick = songData => {
+		props.play(songData);
+	};
+
 	return (
 		<div>
-			<Button onClick={props.increment}>てすと</Button>
-			<div>{props.count}</div>
-			<Link href="/login"><a>ログイン画面へ</a></Link>
+			<Container maxWidth="md" className={classes.root}>
+				<Grid container>
+					<Grid item xs={12}>
+						<Typography variant="h4" className={classes.title}>
+							Recently uploaded song list.
+						</Typography>
+					</Grid>
+					{songs ? songs.map(song => (
+						<SongCard key={song.title} song={song} cardOnClick={cardOnClick}/>
+					)) : (<Grid item>Loading...</Grid>)
+					}
+				</Grid>
+			</Container>
 		</div>
 	);
 };
 
 App.propTypes = {
-	increment: PropTypes.func.isRequired,
-	count: PropTypes.number
+	updateSong: PropTypes.func,
+	songList: PropTypes.array,
+	play: PropTypes.func.isRequired
 };
 
 App.defaultProps = {
-	count: 0
+	updateSong: () => {},
+	songList: []
 };
 
 const mapStateToProps = state => {
 	return {
-		...state.counter,
-		...state.auth
+		...state.song,
+		...state.auth,
+		...state.player
 	};
 };
 
 const mapDispatchToProps = dispatch => {
 	return {
-		increment: () => dispatch(counterModule.increment()),
-		decrement: () => dispatch(counterModule.decrement())
+		updateSong: songData => dispatch(songModule.update(songData)),
+		play: songData => dispatch(playerModule.play(songData))
 	};
 };
 

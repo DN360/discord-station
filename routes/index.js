@@ -1,8 +1,32 @@
+const fs = require('fs');
+const path = require('path');
 const KoaRouter = require('koa-router');
+const mime = require('mime');
 const apiRouter = require('./api');
 
 const router = new KoaRouter();
 router.use('/api/v1', apiRouter.routes(), apiRouter.allowedMethods())
+	.all('/src*', async ctx => {
+		ctx.status = 403;
+		ctx.body = {
+			status: 'error',
+			message: 'Direct load source is strictly prohibited.'
+		};
+	})
+	.get('/assets*', async ctx => {
+		ctx.status = 200;
+		const filePath = path.resolve(__dirname, '..', 'assets', ctx.request.path.replace(/^\/assets\//, ''));
+		if (fs.existsSync(filePath)) {
+			ctx.type = mime.getType(filePath);
+			ctx.body = fs.createReadStream(filePath);
+		} else {
+			ctx.status = 404;
+			ctx.body = {
+				status: 'error',
+				message: 'not found'
+			};
+		}
+	})
 	.get('*', async ctx => {
 		/* eslint camelcase: ["error", {properties: "never"}] */
 		const handle = ctx.nextApp.getRequestHandler();

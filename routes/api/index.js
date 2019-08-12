@@ -25,7 +25,7 @@ router.use('/song', loginCheck, songRouter.routes(), songRouter.allowedMethods()
 	.use('/pic', loginCheck, picRouter.routes(), picRouter.allowedMethods())
 	.use('/album', loginCheck, albumRouter.routes(), albumRouter.allowedMethods())
 	.use('/auth', authRouter.routes(), authRouter.allowedMethods())
-	.use('/user', userRouter.routes(), userRouter.allowedMethods())
+	.use('/user', loginCheck, userRouter.routes(), userRouter.allowedMethods())
 	.all('*', ctx => {
 		ctx.status = 501;
 		ctx.body = {

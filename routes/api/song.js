@@ -39,9 +39,15 @@ const insertToDB = async ({ctx, album, artist, pictureName, createdPath, picture
 		});
 	}
 
+	const picIdFromAlbumData = await ctx.models.albums.findOne({
+		where: {
+			id: albumData.id
+		},
+		attributes: ['pic_id']
+	}).then(x => x.pic_id);
 	let pictureData = await ctx.models.pics.findOne({
 		where: {
-			album_id: albumData.id
+			id: picIdFromAlbumData
 		},
 		attributes: ['id']
 	});
@@ -551,16 +557,17 @@ const getSongList = async ctx => {
 		user_id: song.user_id,
 		id: song.id
 	})));
+	const nextQuery = `&count=${count}&q=${searchQuery || ''}&artistid=${artistid || ''}&albumid=${albumid || ''}&userid=${userid || ''}`;
 	ctx.body = {
 		status: 'success',
 		pages: {
 			maxPage, minPage, nextPage, prevPage
 		},
 		links: {
-			maxPage: ctx.request.path + `?page=${maxPage}&count=${count}`,
-			minPage: ctx.request.path + `?page=${minPage}&count=${count}`,
-			nextPage: nextPage === null ? null : ctx.request.path + `?page=${nextPage}&count=${count}`,
-			prevPage: prevPage === null ? null : ctx.request.path + `?page=${prevPage}&count=${count}`
+			maxPage: ctx.request.path + `?page=${maxPage}${nextQuery}`,
+			minPage: ctx.request.path + `?page=${minPage}${nextQuery}`,
+			nextPage: nextPage === null ? null : ctx.request.path + `?page=${nextPage}${nextQuery}`,
+			prevPage: prevPage === null ? null : ctx.request.path + `?page=${prevPage}${nextQuery}`
 		},
 		songs: songList
 	};
