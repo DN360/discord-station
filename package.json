@@ -5,7 +5,9 @@
   "license": "MIT",
   "scripts": {
     "dev": "pm2 start ecosystem.config.js",
-    "build": "next build"
+    "build": "next build",
+    "start": "pm2 start ecosystem.config.js --env production",
+    "discord": "pm2 start ./discord-server/Rhythm-Bot/dist/app.js"
   },
   "dependencies": {
     "@material-ui/core": "^4.3.0",
