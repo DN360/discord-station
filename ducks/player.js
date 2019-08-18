@@ -19,7 +19,7 @@ const statusEnum = {
 
 const initialState = {
 	cueList: [],
-	cue: -1,
+	cueIndex: -1,
 	repeat: false,
 	noShuffleCueList: [],
 	shuffle: false,
@@ -29,23 +29,27 @@ const initialState = {
 // Reducer
 export default function reducer(state = initialState, action) {
 	switch (action.type) {
-		case PLAY:
+		case PLAY: {
 			if (action.data === undefined || (state.cueList.slice(-1)[0] && state.cueList.slice(-1)[0].id === action.data.id)) {
 				return {
 					...state,
-					status: statusEnum.play
+					status: state.cueList.length === 0 ? statusEnum.stop : statusEnum.play
 				};
 			}
 
+			const newCueList = [
+				...state.cueList,
+				action.data
+			];
+
 			return {
 				...state,
-				cueList: [
-					...state.cueList,
-					action.data
-				],
+				cueList: newCueList,
 				cueIndex: state.cueList.length,
-				status: statusEnum.play
+				status: newCueList.length === 0 ? statusEnum.stop : statusEnum.play
 			};
+		}
+
 		case PAUSE:
 			return {
 				...state,
@@ -69,14 +73,25 @@ export default function reducer(state = initialState, action) {
 					action.data
 				]
 			};
-		case SETCUELIST:
+		case SETCUELIST: {
+			let newList = [];
+			let nextCueIndex = action.index;
+			if (state.shuffle) {
+				const prevSongIdByCueIndex = action.list[nextCueIndex] ? action.list[nextCueIndex].id : -1;
+				newList = action.list.map(x => [Math.random(), x]).sort().map(x => x[1]);
+				nextCueIndex = prevSongIdByCueIndex >= 0 ? newList.findIndex(x => x.id === prevSongIdByCueIndex) : 0;
+			} else {
+				newList = action.list;
+			}
+
 			return {
 				...state,
-				cueList: [
-					...action.list
-				],
-				cueIndex: action.index
+				cueList: [...newList],
+				noShuffleCueList: [...action.list],
+				cueIndex: nextCueIndex
 			};
+		}
+
 		case REPEAT:
 			return {
 				...state,
@@ -108,6 +123,9 @@ export default function reducer(state = initialState, action) {
 
 		case SKIPNEXT: {
 			let nextStatus = 'play';
+			const nextCueIndex = state.cueIndex + 1 >= state.cueList.length ? (
+				state.repeat ? 0 : state.cueList.length - 1
+			) : state.cueIndex + 1;
 			if (state.cueIndex + 1 >= state.cueList.length) {
 				if (state.repeat) {
 					nextStatus = statusEnum.play;
@@ -118,15 +136,16 @@ export default function reducer(state = initialState, action) {
 
 			return {
 				...state,
-				cueIndex: state.cueIndex + 1 >= state.cueList.length ? (
-					state.repeat ? 0 : state.cueList.length - 1
-				) : state.cueIndex + 1,
+				cueIndex: nextCueIndex,
 				status: nextStatus
 			};
 		}
 
 		case SKIPPREV: {
 			let nextStatus = 'play';
+			const nextCueIndex = state.cueIndex - 1 < 0 ? (
+				state.repeat ? state.cueList.length - 1 : 0
+			) : state.cueIndex - 1;
 			if (state.cueIndex - 1 < 0) {
 				if (state.repeat) {
 					nextStatus = statusEnum.play;
@@ -137,9 +156,7 @@ export default function reducer(state = initialState, action) {
 
 			return {
 				...state,
-				cueIndex: state.cueIndex - 1 < 0 ? (
-					state.repeat ? state.cueList.length - 1 : 0
-				) : state.cueIndex - 1,
+				cueIndex: nextCueIndex,
 				status: nextStatus
 			};
 		}

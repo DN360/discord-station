@@ -18,14 +18,14 @@ const insertToDB = async ({ctx, album, artist, pictureName, createdPath, picture
 		where: {
 			name: album
 		},
-		attributes: ['id']
+		attributes: ['id', 'name']
 	});
 
 	let artistData = await ctx.models.artists.findOne({
 		where: {
 			name: artist
 		},
-		attributes: ['id']
+		attributes: ['id', 'name']
 	});
 
 	if (!albumData) {
@@ -188,6 +188,7 @@ const createSong = async ctx => {
 						album: albumData.name,
 						song_id: songData.id,
 						pic_id: pictureData ? pictureData.id : undefined,
+						user_id: ctx.session.user_id,
 						status
 					}
 				};
@@ -229,12 +230,13 @@ const createSong = async ctx => {
 			album_id: null,
 			pic_id: null,
 			path: copyToPath,
+			user_id: ctx.session.user_id,
 			status
 		});
 		return songInstance.save().then(songData => {
 			ctx.status = 200;
 			ctx.body = {
-				status: 'success',
+				status: 'created',
 				message: 'created',
 				id: songData.id,
 				data: {
@@ -474,9 +476,46 @@ const updateSong = async ctx => {
 	}
 };
 
+const getContinueSongList = async ctx => {
+	const whereQuery = {
+		status: 'created'
+	};
+	if (!ctx.session.is_admin) {
+		whereQuery.user_id = ctx.session.user_id;
+	}
+
+	const songList = await ctx.models.songs.findAll({
+		where: whereQuery,
+		include: [
+			{model: ctx.models.albums, attributes: ['name']},
+			{model: ctx.models.artists, attributes: ['name']},
+			{model: ctx.models.users, attributes: ['name']}
+		]
+	}).then(songs => songs.map(song => ({
+		title: song.name,
+		album: song.album === null ? '' : song.album.name,
+		artist: song.artist === null ? '' : song.artist.name,
+		album_id: song.album_id,
+		artist_id: song.artist_id,
+		pic_id: song.pic_id,
+		user_id: song.user_id,
+		id: song.id
+	})));
+	ctx.body = {
+		status: 'success',
+		data: songList.filter(Boolean)
+	};
+};
+
 const getSongList = async ctx => {
 	const {like, or: Or} = ctx.Seq.Op;
 	const {page: requestPage, count: requestCount, q: searchQuery, artistid, albumid, userid} = ctx.query;
+	const uniqueKeys = [
+		{key: 'q', value: ctx.helper.isEmpty(searchQuery)},
+		{key: 'artistid', value: ctx.helper.isEmpty(artistid)},
+		{key: 'albumid', value: ctx.helper.isEmpty(albumid)},
+		{key: 'userid', value: ctx.helper.isEmpty(userid)}
+	].filter(x => x.value !== undefined).map(x => `${x.key}-${x.value}`).join('&');
 	const page = requestPage === undefined ? 0 : Number(requestPage);
 	const count = requestCount === undefined ? 10 : Number(requestCount);
 	ctx.logger.trace(`Request page: ${page}, and show number: ${count}`);
@@ -567,9 +606,11 @@ const getSongList = async ctx => {
 			maxPage: ctx.request.path + `?page=${maxPage}${nextQuery}`,
 			minPage: ctx.request.path + `?page=${minPage}${nextQuery}`,
 			nextPage: nextPage === null ? null : ctx.request.path + `?page=${nextPage}${nextQuery}`,
-			prevPage: prevPage === null ? null : ctx.request.path + `?page=${prevPage}${nextQuery}`
+			prevPage: prevPage === null ? null : ctx.request.path + `?page=${prevPage}${nextQuery}`,
+			uniqueKeys: uniqueKeys === '' ? 'recent' : uniqueKeys
 		},
-		songs: songList
+		songs: songList,
+		uniqueKeys: uniqueKeys === '' ? 'recent' : uniqueKeys
 	};
 };
 
@@ -630,8 +671,8 @@ const getSongMetadata = async ctx => {
 			status: 'success',
 			data: {
 				title: songData.name,
-				album: songData.album.name,
-				artist: songData.artist.name,
+				album: songData.album === null ? '' : songData.album.name,
+				artist: songData.artist === null ? '' : songData.artist.name,
 				path: songData.path,
 				id: songData.id,
 				album_id: songData.album_id,
@@ -706,6 +747,7 @@ router.patch('/:id', patchSong);
 router.put('/:id', updateSong);
 router.get('/:id', getSong);
 router.get('/meta/:id', getSongMetadata);
+router.get('/continue/list', getContinueSongList);
 router.get('/', getSongList);
 router.delete('/:id', deleteSongMetadata);
 

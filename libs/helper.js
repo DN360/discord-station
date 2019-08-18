@@ -13,3 +13,9 @@ module.exports.passwordHash = str => {
 	const md5hash = crypt.createHash('md5');
 	return md5hash.update(str + share.PASSWORDSALT, 'binary').digest('hex');
 };
+
+/**
+ * @param {Object} obj - evaluate object
+ * @returns {Object} - if obj is empty then returns undefined, but else returns obj
+ */
+module.exports.isEmpty = obj => obj === undefined || obj === '' ? undefined : obj;

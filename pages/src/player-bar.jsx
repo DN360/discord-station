@@ -1,8 +1,8 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {connect} from 'react-redux';
 import {makeStyles} from '@material-ui/styles';
-import {AppBar, Toolbar, IconButton, Slider} from '@material-ui/core';
-import {PlayArrowRounded, StopRounded, PauseRounded, SkipNextRounded, SkipPreviousRounded, RvHookupSharp} from '@material-ui/icons';
+import {AppBar, Toolbar, IconButton, Slider, Grid} from '@material-ui/core';
+import {PlayArrowRounded, StopRounded, PauseRounded, SkipNextRounded, SkipPreviousRounded, RepeatRounded, ShuffleRounded} from '@material-ui/icons';
 import PropTypes from 'prop-types';
 import * as playerModule from '../../ducks/player';
 
@@ -15,12 +15,27 @@ const useStyles = makeStyles(theme => ({
 		top: 'auto',
 		bottom: 0
 	},
+	sliderRoot: {
+		[theme.breakpoints.up('md')]: {
+			display: 'inherit'
+		}, [theme.breakpoints.down('sm')]: {
+			display: 'none'
+		},
+		width: '100%'
+	},
 	slider: {
 		color: theme.palette.common.white
 	},
 	timeSpan: {
 		paddingLeft: theme.spacing(1),
 		paddingRight: theme.spacing(1)
+	},
+	mdToolbar: {
+		[theme.breakpoints.up('md')]: {
+			display: 'none'
+		}, [theme.breakpoints.down('sm')]: {
+			display: 'inherit'
+		}
 	}
 }));
 const PlayerBar = props => {
@@ -31,7 +46,7 @@ const PlayerBar = props => {
 	const [currentTime, setCurrentTime] = useState(0);
 	const [resumeMode, setResumeMode] = useState(false);
 	useEffect(() => {
-		if (props.player.status === playerModule.playerStatus.play) {
+		if (props.player.status === playerModule.playerStatus.play || props.player.status === playerModule.playerStatus.replay) {
 			sourceRef.current.src = `/api/v1/song/${props.player.cueList[props.player.cueIndex].id}`;
 			playerRef.current.src = `/api/v1/song/${props.player.cueList[props.player.cueIndex].id}`;
 			playerRef.current.play();
@@ -77,6 +92,14 @@ const PlayerBar = props => {
 
 	const audioOnEnded = () => {
 		if (playerRef.current.duration - playerRef.current.currentTime <= 0) {
+			if (props.player.repeat) {
+				if (props.player.cueList.length === 1) {
+					sliderOnChange(null, 0);
+					playerRef.current.play();
+					return;
+				}
+			}
+
 			props.skipNext();
 		}
 	};
@@ -94,22 +117,25 @@ const PlayerBar = props => {
 		<div className={classes.root}>
 			<AppBar color="secondary" className={classes.appBar} position="fixed">
 				<Toolbar>
-					<IconButton
-						color="inherit"
-						onClick={() => {
-							props.play();
-						}}
-					>
-						<PlayArrowRounded/>
-					</IconButton>
-					<IconButton
-						color="inherit"
-						onClick={() => {
-							props.pause();
-						}}
-					>
-						<PauseRounded/>
-					</IconButton>
+					{props.player.status === playerModule.playerStatus.play ? (
+						<IconButton
+							color="inherit"
+							onClick={() => {
+								props.pause();
+							}}
+						>
+							<PauseRounded/>
+						</IconButton>
+					) : (
+						<IconButton
+							color="inherit"
+							onClick={() => {
+								props.play();
+							}}
+						>
+							<PlayArrowRounded/>
+						</IconButton>
+					)}
 					<IconButton
 						color="inherit"
 						onClick={() => {
@@ -138,13 +164,37 @@ const PlayerBar = props => {
 					>
 						<SkipNextRounded/>
 					</IconButton>
+					<IconButton
+						color={props.player.repeat ? 'inherit' : 'default'}
+						onClick={() => {
+							props.repeat();
+						}}
+					>
+						<RepeatRounded/>
+					</IconButton>
+					<IconButton
+						color={props.player.shuffle ? 'inherit' : 'default'}
+						onClick={() => {
+							props.shuffle();
+						}}
+					>
+						<ShuffleRounded/>
+					</IconButton>
+					<Grid className={classes.sliderRoot}>
+						<span className={classes.timeSpan}>
+							{secToTime(currentTime)}/{secToTime(duration)}
+						</span>
+						<Slider max={duration} className={classes.slider} value={currentTime} onChange={sliderOnChange}/>
+					</Grid>
+					<audio ref={playerRef} onPlay={audioOnPlay} onLoadedData={e => audioOnLoadedData(e)} onEnded={audioOnEnded}>
+						<source ref={sourceRef}/>
+					</audio>
+				</Toolbar>
+				<Toolbar className={classes.mdToolbar}>
 					<span className={classes.timeSpan}>
 						{secToTime(currentTime)}/{secToTime(duration)}
 					</span>
 					<Slider max={duration} className={classes.slider} value={currentTime} onChange={sliderOnChange}/>
-					<audio ref={playerRef} onPlay={audioOnPlay} onLoadedData={e => audioOnLoadedData(e)} onEnded={audioOnEnded}>
-						<source ref={sourceRef}/>
-					</audio>
 				</Toolbar>
 			</AppBar>
 		</div>
@@ -157,7 +207,9 @@ PlayerBar.propTypes = {
 	pause: PropTypes.func.isRequired,
 	stop: PropTypes.func.isRequired,
 	skipNext: PropTypes.func.isRequired,
-	skipPrev: PropTypes.func.isRequired
+	skipPrev: PropTypes.func.isRequired,
+	repeat: PropTypes.func.isRequired,
+	shuffle: PropTypes.func.isRequired
 };
 
 const mapStateToProps = state => {
@@ -173,7 +225,9 @@ const mapDispatchToProps = dispatch => {
 		pause: () => dispatch(playerModule.pause()),
 		stop: () => dispatch(playerModule.stop()),
 		skipNext: () => dispatch(playerModule.skipNext()),
-		skipPrev: () => dispatch(playerModule.skipPrev())
+		skipPrev: () => dispatch(playerModule.skipPrev()),
+		repeat: () => dispatch(playerModule.toggleRepeatMode()),
+		shuffle: () => dispatch(playerModule.toggleShuffleMode())
 	};
 };
 

@@ -10,6 +10,7 @@ import PropTypes from 'prop-types';
 import IconButton from '@material-ui/core/IconButton';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import HomeRounded from '@material-ui/icons/HomeRounded';
+import {AddRounded} from '@material-ui/icons';
 import SearchIcon from '@material-ui/icons/Search';
 import InputBase from '@material-ui/core/InputBase';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -28,7 +29,13 @@ const useStyles = makeStyles(theme => ({
 		marginRight: theme.spacing(2)
 	},
 	title: {
-		flexGrow: 1
+		flexGrow: 1,
+		[theme.breakpoints.down('sm')]: {
+			display: 'none'
+		},
+		[theme.breakpoints.up('md')]: {
+			display: 'inherit'
+		}
 	},
 	search: {
 		position: 'relative',
@@ -37,10 +44,10 @@ const useStyles = makeStyles(theme => ({
 		'&:hover': {
 			backgroundColor: fade(theme.palette.common.white, 0.25)
 		},
-		marginRight: theme.spacing(2),
-		marginLeft: 0,
-		width: '100%',
-		[theme.breakpoints.up('sm')]: {
+		marginRight: theme.spacing(0),
+		marginLeft: 'auto',
+		width: 'auto',
+		[theme.breakpoints.up('md')]: {
 			marginLeft: theme.spacing(3),
 			width: 'auto'
 		}
@@ -84,7 +91,7 @@ const MyAppBar = props => {
 
 	const searchEventHandler = (token, refToken, refQuery) => {
 		if (token === refToken.current) {
-			fetch(`/api/v1/song/?q=${encodeURIComponent(refQuery.current)}`).then(x => x.json()).then(resp => {
+			fetch(`/api/v1/song/?count=60&q=${encodeURIComponent(refQuery.current)}`).then(x => x.json()).then(resp => {
 				props.songUpdate(resp.songs);
 			});
 		}
@@ -138,6 +145,13 @@ const MyAppBar = props => {
 								color="inherit"
 							>
 								<HomeRounded/>
+							</IconButton>
+						</Link>
+						<Link href="/add-song">
+							<IconButton
+								color="inherit"
+							>
+								<AddRounded/>
 							</IconButton>
 						</Link>
 						<IconButton

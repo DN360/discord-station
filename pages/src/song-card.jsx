@@ -16,10 +16,10 @@ const useStyles = makeStyles(theme => ({
 const SongCard = props => {
 	const classes = useStyles();
 	const {song} = props;
-	const [songData, setSongData] = useState(song);
+	const [songData] = useState(song);
 
 	return (
-		<Grid item xs={6} md={3}
+		<Grid item xs={6} md={2}
 			className={classes.songCard} onClick={e => {
 				props.cardOnClick(songData, e);
 			}}

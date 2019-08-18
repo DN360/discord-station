@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {connect} from 'react-redux';
 import {makeStyles} from '@material-ui/styles';
-import Button from '@material-ui/core/Button';
 import Container from '@material-ui/core/Container';
 import Router from 'next/router';
 import Grid from '@material-ui/core/Grid';
@@ -13,7 +12,7 @@ import SongCard from './src/song-card.jsx';
 
 const useStyles = makeStyles(theme => ({
 	root: {
-		margin: theme.spacing(0)
+		margin: 'auto'
 	},
 	title: {
 		marginTop: theme.spacing(2)
@@ -24,7 +23,7 @@ const App = props => {
 	const classes = useStyles();
 	const [songs, setSongs] = useState(props.songList);
 	useEffect(() => {
-		fetch('/api/v1/song').then(x => x.json()).then(resp => {
+		fetch('/api/v1/song?count=60').then(x => x.json()).then(resp => {
 			setSongs(resp.songs);
 		});
 	}, []);
@@ -33,7 +32,8 @@ const App = props => {
 	}, [props.songList]);
 
 	const cardOnClick = songData => {
-		props.play(songData);
+		props.setCueList(songs, songs.findIndex(x => x.id === songData.id));
+		props.play();
 	};
 
 	return (
@@ -56,13 +56,13 @@ const App = props => {
 };
 
 App.propTypes = {
-	updateSong: PropTypes.func,
+	setCueList: PropTypes.func,
 	songList: PropTypes.array,
 	play: PropTypes.func.isRequired
 };
 
 App.defaultProps = {
-	updateSong: () => {},
+	setCueList: () => {},
 	songList: []
 };
 
@@ -77,7 +77,8 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
 	return {
 		updateSong: songData => dispatch(songModule.update(songData)),
-		play: songData => dispatch(playerModule.play(songData))
+		play: songData => dispatch(playerModule.play(songData)),
+		setCueList: (songList, cueIndex = 0) => dispatch(playerModule.setCueList(songList, cueIndex))
 	};
 };
 
