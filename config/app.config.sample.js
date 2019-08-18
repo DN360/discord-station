@@ -1,5 +1,6 @@
 module.exports = {
 	UPLOADDIR: '/mnt/station',
-	PASSWORDSALT: ''
+	PASSWORDSALT: '',
+	PORT: 3000
 };
 

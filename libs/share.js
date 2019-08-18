@@ -9,7 +9,7 @@ for (const configKey of Object.keys(appConfigSample)) {
 			...appConfigSample,
 			...appConfig
 		};
-		fs.writeFileSync(path.resolve(__dirname, 'config', 'app.config.json'), JSON.stringify(appConfig));
+		fs.writeFileSync(path.resolve(__dirname, '..', 'config', 'app.config.json'), JSON.stringify(appConfig));
 	}
 }
 

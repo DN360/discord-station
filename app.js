@@ -102,7 +102,7 @@ const start = async () => {
 		}))
 		.use(routes.routes())
 		.use(routes.allowedMethods())
-		.listen(3000, () => {
+		.listen(process.env.PORT || 3000, () => {
 			logger.info('listen on port 3000');
 		});
 };
