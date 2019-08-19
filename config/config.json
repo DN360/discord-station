@@ -21,7 +21,8 @@
     "password": null,
     "database": "database_production",
     "host": "127.0.0.1",
-    "dialect": "mysql",
-    "operatorsAliases": "Op"
+    "dialect": "sqlite",
+    "operatorsAliases": "Op",
+    "storage": "databases/music_server.sqlite"
   }
 }

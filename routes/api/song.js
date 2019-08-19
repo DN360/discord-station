@@ -507,6 +507,61 @@ const getContinueSongList = async ctx => {
 	};
 };
 
+const getRandomSongList = async ctx => {
+	const {count: requestCount, artistid, albumid, userid} = ctx.query;
+	const count = requestCount === undefined ? 10 : Number(requestCount);
+	ctx.logger.trace(`Request path: ${ctx.request.path}`);
+
+	let whereQuery = {
+		status: 'ready'
+	};
+
+	if (artistid !== undefined) {
+		whereQuery = {
+			...whereQuery,
+			'$artist.id$': artistid
+		};
+	}
+
+	if (albumid !== undefined) {
+		whereQuery = {
+			...whereQuery,
+			'$album.id$': albumid
+		};
+	}
+
+	if (userid !== undefined) {
+		whereQuery = {
+			...whereQuery,
+			'$user.id$': userid
+		};
+	}
+
+	const songList = await ctx.models.songs.findAll({
+		where: whereQuery,
+		include: [
+			{model: ctx.models.albums, attributes: ['name']},
+			{model: ctx.models.artists, attributes: ['name']},
+			{model: ctx.models.users, attributes: ['name']}
+		]
+	}).then(songs => songs.map(song => ({
+		title: song.name,
+		album: song.album.name,
+		artist: song.artist.name,
+		album_id: song.album_id,
+		artist_id: song.artist_id,
+		pic_id: song.pic_id,
+		user_id: song.user_id,
+		id: song.id
+	})));
+	const randomCount = songList.length < count ? songList.length : count;
+	const countedRandomList = songList.slice().map(x => [Math.random(), x]).sort().map(x => x[1]).slice(0, randomCount);
+	ctx.body = {
+		status: 'success',
+		songs: countedRandomList
+	};
+};
+
 const getSongList = async ctx => {
 	const {like, or: Or} = ctx.Seq.Op;
 	const {page: requestPage, count: requestCount, q: searchQuery, artistid, albumid, userid} = ctx.query;
@@ -748,6 +803,7 @@ router.put('/:id', updateSong);
 router.get('/:id', getSong);
 router.get('/meta/:id', getSongMetadata);
 router.get('/continue/list', getContinueSongList);
+router.get('/random/list', getRandomSongList);
 router.get('/', getSongList);
 router.delete('/:id', deleteSongMetadata);
 
