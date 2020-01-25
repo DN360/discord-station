@@ -10,7 +10,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import withRedux from 'next-redux-wrapper';
 import {reducer as rootReducer} from '../ducks';
 import * as authModule from '../ducks/auth';
-import theme from './src/theme';
+import theme from '../mui-themes/theme';
 import AppBar from './src/app-bar.jsx';
 import PlayerBar from './src/player-bar.jsx';
 
