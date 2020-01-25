@@ -1,5 +1,6 @@
+/* eslint max-nested-callbacks: OFF */
 import React, {useState, useEffect, useRef} from 'react';
-import {Grid, Snackbar, Button, TextField, Typography, Table, TableBody, TableCell, TableHead, TableRow} from '@material-ui/core';
+import {Paper, Grid, Snackbar, Button, TextField, Typography, Table, TableContainer, TableBody, TableCell, TableHead, TableRow} from '@material-ui/core';
 import PropTypes from 'prop-types';
 import {makeStyles} from '@material-ui/styles';
 import BPromise from 'bluebird';
@@ -7,6 +8,12 @@ import BPromise from 'bluebird';
 const useStyles = makeStyles(theme => ({
 	root: {
 		marginTop: theme.spacing(3)
+	},
+	paper: {
+		maxHeight: '370px'
+	},
+	table: {
+		minWidth: '650px'
 	}
 }));
 
@@ -24,46 +31,23 @@ const AddSong = () => {
 		setOpen(false);
 	};
 
+	// UpdateUploadFileListを叩き、更新されたあとに必ず実行される関数
 	useEffect(() => {
-		fetch('/api/v1/song/continue/list').then(x => x.json()).then(resp => {
-			if (resp.data.length === 0) {
-				return;
-			}
+		// Uploadingがなかったらreturn
+		if (uploadFileList.filter(d => d.status === 'Uploading').length === 0) {
+			return;
+		}
 
-			if (uploadFileList.length > 0 && resp.data.filter(x => uploadFileList.findIndex(y => y.data.title === x.title) < 0).length === 0) {
-				return;
-			}
+		// 一旦UploadingをSendingに変えることで無限ループ回避
+		setUploadFileList(array => array.map(d => d.status === 'Uploading' ? {
+			...d,
+			status: 'Sending'
+		} : d));
 
-			if (resp.status === 'error') {
-				setUploadFileList(array => [
-					...array,
-					{
-						status: 'Error',
-						message: resp.message,
-						data: {
-							title: resp.message
-						}
-					}
-				]);
-			}
+		const fetchFiles = uploadFileList.filter(d => d.status === 'Uploading');
 
-			if (resp.status === 'success') {
-				resp.data.forEach(respData => {
-					setUploadFileList(array => [
-						...array,
-						{
-							status: 'Continue',
-							message: resp.message,
-							data: respData
-						}
-					]);
-				});
-			}
-		});
-	}, [uploadFileList]);
-
-	const fileButtonOnChange = e => {
-		BPromise.map(e.target.files, file => {
+		BPromise.map(fetchFiles, uploadingFile => {
+			const {file, uuid} = uploadingFile;
 			const formData = new FormData();
 			formData.append('file', file);
 			return fetch('/api/v1/song', {
@@ -71,17 +55,16 @@ const AddSong = () => {
 				body: formData
 			}).then(x => x.json()).then(resp => {
 				if (resp.status === 'error') {
-					setUploadFileList(array => [
-						...array,
-						{
-							fileName: file.name,
-							status: 'Error',
-							message: resp.message,
-							data: {
-								title: resp.message
-							}
-						}
-					]);
+					setUploadFileList(array => array.map(d => d.uuid === uuid ? {
+						fileName: file.name,
+						status: 'Error',
+						message: resp.message,
+						data: {
+							title: file.name,
+							album: resp.message
+						},
+						uuid
+					} : d));
 				}
 
 				if (resp.status === 'warning') {
@@ -92,60 +75,40 @@ const AddSong = () => {
 				}
 
 				if (resp.status === 'created') {
-					setUploadFileList(array => [
-						...array,
-						{
-							fileName: file.name,
-							status: 'Continue',
-							message: resp.message,
-							data: resp.data
-						}
-					]);
+					setUploadFileList(array => array.map(d => d.uuid === uuid ? {
+						fileName: file.name,
+						status: 'Continue',
+						message: resp.message,
+						data: resp.data,
+						uuid
+					} : d));
 				}
 
 				if (resp.status === 'success') {
-					setUploadFileList(array => [
-						...array,
-						{
-							fileName: file.name,
-							status: 'Update',
-							message: resp.message,
-							data: resp.data
-						}
-					]);
-				}
-			}).catch(error => {
-				if (error.code === 'continue') {
-					return fetch(`/api/v1/song/meta/${error.continueID}`).then(x => x.json()).then(resp => {
-						if (resp.status === 'error') {
-							setUploadFileList(array => [
-								...array,
-								{
-									fileName: file.name,
-									status: 'Error',
-									message: resp.message,
-									data: {
-										title: resp.message
-									}
-								}
-							]);
-						}
-
-						if (resp.status === 'success') {
-							setUploadFileList(array => [
-								...array,
-								{
-									fileName: file.name,
-									status: 'Continue',
-									message: resp.message,
-									data: resp.data
-								}
-							]);
-						}
-					});
+					setUploadFileList(array => array.map(d => d.uuid === uuid ? {
+						fileName: file.name,
+						status: 'Update',
+						message: resp.message,
+						data: resp.data,
+						uuid
+					} : d));
 				}
 			});
 		}, {concurrency: 1});
+	}, [uploadFileList]);
+
+	const fileButtonOnChange = e => {
+		const uuid = Date.now();
+		const updatingFiles = [...e.target.files].map((file, i) => ({
+			fileName: file.name,
+			file,
+			status: 'Uploading',
+			data: {
+				title: file.name
+			},
+			uuid: uuid + i
+		}));
+		setUploadFileList(array => [...array, ...updatingFiles]);
 	};
 
 	return (
@@ -158,22 +121,24 @@ const AddSong = () => {
 			<Grid item xs={12}>
 				<input multiple type="file" accept="audio/*" onChange={fileButtonOnChange}/>
 			</Grid>
-			<Table size="small">
-				<TableHead>
-					<TableRow>
-						<TableCell>Song ID</TableCell>
-						<TableCell align="right">Title/Message</TableCell>
-						<TableCell align="right">Album Name</TableCell>
-						<TableCell align="right">Artist Name</TableCell>
-						<TableCell align="right">Status</TableCell>
-					</TableRow>
-				</TableHead>
-				<TableBody>
-					{uploadFileList.map(row => (
-						<SongTableRow key={row.title} row={row} setSnackMessage={setSnackMessage} setOpen={setOpen}/>
-					))}
-				</TableBody>
-			</Table>
+			<TableContainer component={Paper} className={classes.paper}>
+				<Table size="small" className={classes.table}>
+					<TableHead>
+						<TableRow>
+							<TableCell>Song ID</TableCell>
+							<TableCell align="right">Title</TableCell>
+							<TableCell align="right">Album Name/Message</TableCell>
+							<TableCell align="right">Artist Name</TableCell>
+							<TableCell align="right">Status</TableCell>
+						</TableRow>
+					</TableHead>
+					<TableBody>
+						{uploadFileList.map(row => (
+							<SongTableRow key={row.data.title} row={row} setSnackMessage={setSnackMessage} setOpen={setOpen}/>
+						))}
+					</TableBody>
+				</Table>
+			</TableContainer>
 			<Snackbar
 				anchorOrigin={{
 					vertical: 'bottom',
@@ -200,14 +165,14 @@ const SongTableRow = props => {
 	const [album, setAlbum] = useState(row.data.album);
 	const [artist, setArtist] = useState(row.data.artist);
 	const [status, setStatus] = useState(row.status);
-	if (row.status === 'Error') {
+	if (row.status === 'Error' || row.status === 'Uploading') {
 		return (
 			<TableRow>
 				<TableCell component="th" scope="row"/>
-				<TableCell align="right">{title}</TableCell>
+				<TableCell align="right">{row.data.title}</TableCell>
+				<TableCell align="right">{row.data.album}</TableCell>
 				<TableCell align="right"/>
-				<TableCell align="right"/>
-				<TableCell align="right">{status}</TableCell>
+				<TableCell align="right">{row.status}</TableCell>
 			</TableRow>
 		);
 	}

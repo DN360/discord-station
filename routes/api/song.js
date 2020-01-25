@@ -1,3 +1,4 @@
+/* eslint complexity: OFF */
 const path = require('path');
 const fs = require('fs');
 const KoaRouter = require('koa-router');
@@ -116,7 +117,7 @@ const createSong = async ctx => {
 		return;
 	}
 
-	if (ctx.request.files.file.type.indexOf('audio') < 0) {
+	if (!ctx.request.files.file.type.includes('audio')) {
 		ctx.status = 400;
 		ctx.body = {
 			status: 'error',
@@ -127,7 +128,6 @@ const createSong = async ctx => {
 	}
 
 	let tmpPath;
-
 	await ctx.helper.mkdirSync(path.resolve(__dirname, '..', '..', process.env.UPLOADDIR)).then(createdPath => {
 		const newFileName = Date.now() + path.extname(ctx.request.files.file.name);
 		const copyToPath = path.join(createdPath, newFileName);
@@ -259,7 +259,7 @@ const createSong = async ctx => {
 			};
 		});
 	}).catch(error => {
-		ctx.logger.error(error);
+		console.error(error);
 		ctx.status = 500;
 		ctx.body = {
 			status: 'error',
@@ -374,7 +374,7 @@ const updateSong = async ctx => {
 	const {files} = ctx.request;
 
 	if (files.file) {
-		if (files.file.type.indexOf('image') < 0) {
+		if (!files.file.type.includes('image')) {
 			ctx.status = 400;
 			ctx.body = {
 				status: 'error',
@@ -597,21 +597,21 @@ const getSongList = async ctx => {
 		};
 	}
 
-	if (artistid !== undefined) {
+	if (artistid !== undefined && artistid !== '') {
 		whereQuery = {
 			...whereQuery,
 			'$artist.id$': artistid
 		};
 	}
 
-	if (albumid !== undefined) {
+	if (albumid !== undefined && albumid !== '') {
 		whereQuery = {
 			...whereQuery,
 			'$album.id$': albumid
 		};
 	}
 
-	if (userid !== undefined) {
+	if (userid !== undefined && userid !== '') {
 		whereQuery = {
 			...whereQuery,
 			'$user.id$': userid
@@ -626,7 +626,7 @@ const getSongList = async ctx => {
 			{model: ctx.models.users, attributes: ['name']}
 		]
 	}).then(songs => songs.length);
-	const maxPage = songCount === 0 ? 0 : songCount % count === 0 ? (songCount / count) - 1 : (songCount - (songCount % count)) / count;
+	const maxPage = songCount === 0 ? 0 : (songCount % count === 0 ? (songCount / count) - 1 : (songCount - (songCount % count)) / count);
 	const minPage = 0;
 	const nextPage = maxPage === page ? null : page + 1;
 	const prevPage = minPage === page ? null : page - 1;

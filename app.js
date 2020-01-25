@@ -32,13 +32,14 @@ process.env = {
 
 log4js.configure({
 	appenders: {
-		system: {type: 'stdout', filename: 'system.log'}
+		out: {type: 'stdout'},
+		system: {type: 'file', filename: 'system.log'}
 	},
 	categories: {
-		default: {appenders: ['system'], level: process.env.LOGLEVEL || 'debug'}
+		default: {appenders: ['out', 'system'], level: process.env.LOGLEVEL || 'debug'}
 	}
 });
-const logger = log4js.getLogger('system');
+const logger = log4js.getLogger('out');
 
 const app = new Koa();
 const nextApp = next({dev: process.env.NODE_ENV === 'development'});
@@ -51,17 +52,19 @@ app.keys = ['discord-station', 'discord-station_secret'];
 const start = async () => {
 	await nextApp.prepare();
 
-	const mkdirSync = path => BPromise.resolve(path).then(path => new BPromise((resolve, reject) => {
-		mkdirp(path, err => {
-			if (err) {
-				reject(err);
-			} else {
+	const mkdirSync = path => {
+		return BPromise.resolve(path).then(path => new BPromise((resolve, reject) => {
+			try {
+				mkdirp.sync(path);
 				resolve(path);
+			} catch (error) {
+				reject(error);
 			}
-		});
-	}));
-	await mkdirSync('./databases').catch(logger.error);
-	await mkdirSync('./tmp').catch(logger.error);
+		}));
+	};
+
+	await mkdirSync('./databases').catch(error => logger.error(error));
+	await mkdirSync('./tmp').catch(error => logger.error(error));
 	if (!fs.existsSync(sequelizeConfig[process.env.NODE_ENV].storage)) {
 		fs.writeFileSync(sequelizeConfig[process.env.NODE_ENV].storage, '');
 	}
@@ -103,7 +106,7 @@ const start = async () => {
 		.use(routes.routes())
 		.use(routes.allowedMethods())
 		.listen(process.env.PORT || 3000, () => {
-			logger.info('listen on port 3000');
+			logger.info(`listen on port ${process.env.PORT || 3000}`);
 		});
 };
 

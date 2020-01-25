@@ -30,7 +30,7 @@ const SongCard = props => {
 				</Grid>
 				<Grid item xs={12}>
 					<Tooltip title={songData.title}>
-						<Typography noWrap align="center" variant="h6" display="block">{songData.title}</Typography>
+						<Typography noWrap align="center" variant="h6" display="block">{props.isPlaying ? 'PLAY: ' : ''}{songData.title}</Typography>
 					</Tooltip>
 				</Grid>
 				<Grid item xs={12}>
@@ -50,11 +50,13 @@ const SongCard = props => {
 
 SongCard.propTypes = {
 	song: PropType.object,
-	cardOnClick: PropType.func.isRequired
+	cardOnClick: PropType.func.isRequired,
+	isPlaying: PropType.bool
 };
 
 SongCard.defaultProps = {
-	song: {}
+	song: {},
+	isPlaying: false
 };
 
 export default SongCard;

@@ -1,10 +1,10 @@
 /* global document */
 
 import React from 'react';
-import {configureStore} from 'redux-starter-kit';
+import {configureStore} from '@reduxjs/toolkit';
 import {Provider} from 'react-redux';
 import Container from '@material-ui/core/Container';
-import App, {Container as NextContainer} from 'next/app';
+import App from 'next/app';
 import {ThemeProvider} from '@material-ui/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import withRedux from 'next-redux-wrapper';
@@ -30,18 +30,16 @@ class MyApp extends App {
 	render() {
 		const {Component, pageProps, store} = this.props;
 		return (
-			<NextContainer>
-				<ThemeProvider theme={theme}>
-					<CssBaseline/>
-					<Provider store={store}>
-						<Container maxWidth="xl">
-							<AppBar/>
-							<Component {...pageProps}/>
-							<PlayerBar/>
-						</Container>
-					</Provider>
-				</ThemeProvider>
-			</NextContainer>
+			<ThemeProvider theme={theme}>
+				<CssBaseline/>
+				<Provider store={store}>
+					<Container maxWidth="xl">
+						<AppBar/>
+						<Component {...pageProps}/>
+						<PlayerBar/>
+					</Container>
+				</Provider>
+			</ThemeProvider>
 		);
 	}
 
@@ -49,7 +47,7 @@ class MyApp extends App {
 		// Remove the server-side injected CSS.
 		const jssStyles = document.querySelector('#jss-server-side');
 		if (jssStyles) {
-			jssStyles.parentNode.removeChild(jssStyles);
+			jssStyles.remove();
 		}
 	}
 }
