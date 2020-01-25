@@ -18,6 +18,9 @@ const useStyles = makeStyles(theme => ({
 	},
 	title: {
 		marginTop: theme.spacing(2)
+	},
+	scroller: {
+		width: '100%'
 	}
 }));
 
@@ -53,6 +56,7 @@ const App = props => {
 						</Typography>
 					</Grid>
 					<InfiniteScroll
+						className={classes.scroller}
 						hasMore={pageEnd}
 						dataLength={songs.length}
 						next={() => {
