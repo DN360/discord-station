@@ -21,6 +21,11 @@ const useStyles = makeStyles(theme => ({
 	},
 	scroller: {
 		width: '100%'
+	},
+	scrollerParent: {
+		'&>div': {
+			width: '100%'
+		}
 	}
 }));
 
@@ -49,7 +54,7 @@ const App = props => {
 	return (
 		<div>
 			<Container maxWidth="md" className={classes.root}>
-				<Grid container>
+				<Grid container className={classes.scrollerParent}>
 					<Grid item xs={12}>
 						<Typography variant="h4" className={classes.title}>
 							Recently uploaded song list.
