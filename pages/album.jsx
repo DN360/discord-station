@@ -97,7 +97,7 @@ const App = props => {
 								fetch(nextPage).then(x => x.json()).then(resp => {
 									setListItems(array => [
 										...array,
-										...resp.songs
+										...resp.albums
 									]);
 									setPageEnd(resp.pages.nextPage !== null);
 									setNextPage(resp.links.nextPage);
