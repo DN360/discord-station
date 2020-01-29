@@ -6,7 +6,8 @@ const initialState = {
 };
 
 // Reducer
-export default function reducer(state = initialState, action) {
+export default function reducer(state, action) {
+	state = state || initialState;
 	switch (action.type) {
 		case UPDATE:
 			return {

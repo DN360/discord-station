@@ -14,7 +14,7 @@ import SongCard from './src/song-card.jsx';
 const useStyles = makeStyles(theme => ({
 	root: {
 		margin: 'auto',
-		marginBottom: 64
+		marginBottom: 130
 	},
 	title: {
 		marginTop: theme.spacing(2)
@@ -40,11 +40,17 @@ const App = props => {
 		fetch('/api/v1/song?count=60').then(x => x.json()).then(resp => {
 			setSongs(resp.songs);
 			setNextPage(resp.links.nextPage);
+			setPageEnd(resp.pages.nextPage !== null);
 		});
 	}, []);
 	useEffect(() => {
 		setSongs(props.songList);
 	}, [props.songList]);
+
+	useEffect(() => {
+		setNextPage(props.queryNextPage);
+		setPageEnd(props.queryPageEnd);
+	}, [props.queryNextPage, props.queryPageEnd]);
 
 	const cardOnClick = songData => {
 		props.setCueList(songs, songs.findIndex(x => x.id === songData.id));
@@ -92,6 +98,8 @@ const App = props => {
 App.propTypes = {
 	setCueList: PropTypes.func,
 	songList: PropTypes.array,
+	queryNextPage: PropTypes.string,
+	queryPageEnd: PropTypes.bool,
 	play: PropTypes.func.isRequired,
 	cueList: PropTypes.array,
 	cueIndex: PropTypes.number
@@ -100,6 +108,8 @@ App.propTypes = {
 App.defaultProps = {
 	setCueList: () => {},
 	songList: [],
+	queryNextPage: '',
+	queryPageEnd: true,
 	cueList: [],
 	cueIndex: 0
 };
@@ -108,7 +118,8 @@ const mapStateToProps = state => {
 	return {
 		...state.song,
 		...state.auth,
-		...state.player
+		...state.player,
+		...state.query
 	};
 };
 
@@ -134,6 +145,10 @@ App.getInitialProps = async ({store, req, res}) => {
 			Router.push('/login');
 		}
 	}
+
+	return {
+		target: 'song'
+	};
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);

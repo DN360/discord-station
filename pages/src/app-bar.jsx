@@ -8,10 +8,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
 import IconButton from '@material-ui/core/IconButton';
-import AccountCircle from '@material-ui/icons/AccountCircle';
-import HomeRounded from '@material-ui/icons/HomeRounded';
-import {AddRounded} from '@material-ui/icons';
-import SearchIcon from '@material-ui/icons/Search';
+import {AccountCircle, LibraryMusicRounded, AddRounded, Search as SearchIcon, AlbumRounded, PeopleAltRounded} from '@material-ui/icons';
 import InputBase from '@material-ui/core/InputBase';
 import MenuItem from '@material-ui/core/MenuItem';
 import Router from 'next/router';
@@ -19,6 +16,9 @@ import Menu from '@material-ui/core/Menu';
 import uuid from 'uuid/v4';
 import * as authModule from '../../ducks/auth';
 import * as songModule from '../../ducks/song';
+import * as artistModule from '../../ducks/artist';
+import * as albumModule from '../../ducks/album';
+import * as queryModule from '../../ducks/query';
 
 const useStyles = makeStyles(theme => ({
 	root: {
@@ -47,10 +47,16 @@ const useStyles = makeStyles(theme => ({
 		marginRight: theme.spacing(0),
 		marginLeft: 'auto',
 		width: 'auto',
-		[theme.breakpoints.up('md')]: {
+		[theme.breakpoints.down('sm')]: {
 			marginLeft: theme.spacing(3),
-			width: 'auto'
+			marginRight: theme.spacing(3),
+			marginTop: theme.spacing(1),
+			width: '100%'
 		}
+	},
+	invisible: {
+		opacity: 0,
+		width: 0
 	},
 	searchIcon: {
 		width: theme.spacing(7),
@@ -71,6 +77,15 @@ const useStyles = makeStyles(theme => ({
 		[theme.breakpoints.up('md')]: {
 			width: 200
 		}
+	},
+	iconsRoot: {
+		marginLeft: 'auto'
+	},
+	appToolbar: {
+		flexDirection: 'row',
+		[theme.breakpoints.down('sm')]: {
+			flexDirection: 'column'
+		}
 	}
 }));
 
@@ -85,14 +100,29 @@ const MyAppBar = props => {
 		setAnchorEl(null);
 	};
 
+	const {target, extraSearchQuery} = props;
+
 	const handleMenu = event => {
 		setAnchorEl(event.currentTarget);
 	};
 
 	const searchEventHandler = (token, refToken, refQuery) => {
 		if (token === refToken.current) {
-			fetch(`/api/v1/song/?count=60&q=${encodeURIComponent(refQuery.current)}`).then(x => x.json()).then(resp => {
-				props.songUpdate(resp.songs);
+			fetch(`/api/v1/${target}/?count=60&q=${encodeURIComponent(refQuery.current)}${extraSearchQuery === '' ? '' : `&${extraSearchQuery}`}`).then(x => x.json()).then(resp => {
+				if (target === 'song') {
+					props.songUpdate(resp.songs);
+				}
+
+				if (target === 'artist') {
+					props.artistUpdate(resp.artists);
+				}
+
+				if (target === 'album') {
+					props.albumUpdate(resp.albums);
+				}
+
+				props.setNextPage(resp.links.nextPage || '');
+				props.setPageEnd(resp.links.nextPage !== null);
 			});
 		}
 	};
@@ -111,11 +141,11 @@ const MyAppBar = props => {
 	return (
 		<div className={classes.root}>
 			<AppBar position="static">
-				<Toolbar>
+				<Toolbar className={classes.appToolbar}>
 					<Typography variant="h6" className={classes.title}>
 						{props.title || 'Discord-station'}
 					</Typography>
-					<div className={classes.search}>
+					<div className={props.searchVisible ? classes.search : classes.invisible}>
 						<div className={classes.searchIcon}>
 							<SearchIcon/>
 						</div>
@@ -136,7 +166,7 @@ const MyAppBar = props => {
 							}}
 						/>
 					</div>
-					<div>
+					<div className={classes.iconsRoot}>
 						<Link href="/">
 							<IconButton
 								aria-label="menu of this site"
@@ -144,7 +174,27 @@ const MyAppBar = props => {
 								aria-haspopup="true"
 								color="inherit"
 							>
-								<HomeRounded/>
+								<LibraryMusicRounded/>
+							</IconButton>
+						</Link>
+						<Link href="/album">
+							<IconButton
+								aria-label="menu of album"
+								aria-controls="album-site"
+								aria-haspopup="true"
+								color="inherit"
+							>
+								<AlbumRounded/>
+							</IconButton>
+						</Link>
+						<Link href="/artist">
+							<IconButton
+								aria-label="menu of artist"
+								aria-controls="artist-site"
+								aria-haspopup="true"
+								color="inherit"
+							>
+								<PeopleAltRounded/>
 							</IconButton>
 						</Link>
 						<Link href="/add-song">
@@ -190,24 +240,41 @@ const MyAppBar = props => {
 MyAppBar.propTypes = {
 	title: PropTypes.string,
 	setAuth: PropTypes.func.isRequired,
-	songUpdate: PropTypes.func.isRequired
+	songUpdate: PropTypes.func.isRequired,
+	artistUpdate: PropTypes.func.isRequired,
+	albumUpdate: PropTypes.func.isRequired,
+	setNextPage: PropTypes.func.isRequired,
+	setPageEnd: PropTypes.func.isRequired,
+	searchVisible: PropTypes.bool,
+	target: PropTypes.string,
+	extraSearchQuery: PropTypes.string
 };
 
 MyAppBar.defaultProps = {
-	title: 'Discord-station'
+	title: 'Discord-station',
+	searchVisible: true,
+	target: 'song',
+	extraSearchQuery: ''
 };
 
 const mapStateToProps = state => {
 	return {
 		...state.auth,
-		...state.song
+		...state.song,
+		...state.album,
+		...state.artist,
+		...state.query
 	};
 };
 
 const mapDispatchToProps = dispatch => {
 	return {
 		setAuth: authProps => dispatch(authModule.initial(authProps.isLoggedIn, authProps.isAdmin, authProps.userId)),
-		songUpdate: songList => dispatch(songModule.update(songList))
+		songUpdate: songList => dispatch(songModule.update(songList)),
+		artistUpdate: artistList => dispatch(artistModule.update(artistList)),
+		albumUpdate: albumList => dispatch(albumModule.update(albumList)),
+		setNextPage: nextPage => dispatch(queryModule.nextPage(nextPage)),
+		setPageEnd: pageEnd => dispatch(queryModule.pageEnd(pageEnd))
 	};
 };
 

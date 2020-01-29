@@ -27,6 +27,24 @@ router.use('/api/v1', apiRouter.routes(), apiRouter.allowedMethods())
 			};
 		}
 	})
+	.get('/artist/:id', async ctx => {
+		ctx.req.isLoggedIn = ctx.session.is_logged_in;
+		ctx.req.isAdmin = ctx.session.is_admin;
+		ctx.req.userId = ctx.session.user_id;
+		await ctx.nextApp.render(ctx.req, ctx.res, '/artist', {
+			id: Number(ctx.params.id)
+		});
+		ctx.respond = false;
+	})
+	.get('/album/:id', async ctx => {
+		ctx.req.isLoggedIn = ctx.session.is_logged_in;
+		ctx.req.isAdmin = ctx.session.is_admin;
+		ctx.req.userId = ctx.session.user_id;
+		await ctx.nextApp.render(ctx.req, ctx.res, '/album', {
+			id: Number(ctx.params.id)
+		});
+		ctx.respond = false;
+	})
 	.get('*', async ctx => {
 		/* eslint camelcase: ["error", {properties: "never"}] */
 		const handle = ctx.nextApp.getRequestHandler();

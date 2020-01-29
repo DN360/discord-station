@@ -237,4 +237,10 @@ SongTableRow.propTypes = {
 	setOpen: PropTypes.func.isRequired
 };
 
+AddSong.getInitialProps = async () => {
+	return {
+		searchVisible: false
+	};
+};
+
 export default AddSong;

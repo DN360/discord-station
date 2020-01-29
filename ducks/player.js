@@ -28,7 +28,8 @@ const initialState = {
 };
 
 // Reducer
-export default function reducer(state = initialState, action) {
+export default function reducer(state, action) {
+	state = state || initialState;
 	switch (action.type) {
 		case PLAY: {
 			if (action.data === undefined || (state.cueList.slice(-1)[0] && state.cueList.slice(-1)[0].id === action.data.id)) {

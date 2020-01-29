@@ -117,7 +117,7 @@ const getAlbumList = async ctx => {
 			{model: ctx.models.songs, attributes: ['id']}
 		]
 	}).then(albums => albums.length);
-	const maxPage = albumCount === 0 ? 0 : albumCount % count === 0 ? (albumCount / count) - 1 : (albumCount - (albumCount % count)) / count;
+	const maxPage = albumCount === 0 ? 0 : (albumCount % count === 0 ? (albumCount / count) - 1 : (albumCount - (albumCount % count)) / count);
 	const minPage = 0;
 	const nextPage = maxPage === page ? null : page + 1;
 	const prevPage = minPage === page ? null : page - 1;
@@ -142,10 +142,10 @@ const getAlbumList = async ctx => {
 			maxPage, minPage, nextPage, prevPage
 		},
 		links: {
-			maxPage: ctx.request.path + `?page=${maxPage}&count=${count}`,
-			minPage: ctx.request.path + `?page=${minPage}&count=${count}`,
-			nextPage: nextPage === null ? null : ctx.request.path + `?page=${nextPage}&count=${count}`,
-			prevPage: prevPage === null ? null : ctx.request.path + `?page=${prevPage}&count=${count}`
+			maxPage: ctx.request.path + `?page=${maxPage}&count=${count}&q=${searchQuery || ''}`,
+			minPage: ctx.request.path + `?page=${minPage}&count=${count}&q=${searchQuery || ''}`,
+			nextPage: nextPage === null ? null : ctx.request.path + `?page=${nextPage}&count=${count}&q=${searchQuery || ''}`,
+			prevPage: prevPage === null ? null : ctx.request.path + `?page=${prevPage}&count=${count}&q=${searchQuery || ''}`
 		},
 		albums: albumList
 	};

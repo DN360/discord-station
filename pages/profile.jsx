@@ -69,7 +69,7 @@ const App = props => {
 
 		const [file] = files;
 
-		if (file.type.indexOf('image') < 0) {
+		if (!file.type.includes('image')) {
 			setSnackMessage('Uploaded file is not valid image.');
 			setOpen(true);
 			return;
@@ -281,6 +281,10 @@ App.getInitialProps = async ({store, req, res}) => {
 			Router.push('/login');
 		}
 	}
+
+	return {
+		searchVisible: false
+	};
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);

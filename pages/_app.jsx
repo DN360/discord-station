@@ -34,9 +34,9 @@ class MyApp extends App {
 				<CssBaseline/>
 				<Provider store={store}>
 					<Container maxWidth="xl">
-						<AppBar/>
+						<AppBar {...pageProps}/>
 						<Component {...pageProps}/>
-						<PlayerBar/>
+						<PlayerBar {...pageProps}/>
 					</Container>
 				</Provider>
 			</ThemeProvider>
