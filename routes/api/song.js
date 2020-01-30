@@ -457,6 +457,17 @@ const updateSong = async ctx => {
 		}
 
 		fs.copyFileSync(files.file.path, newPicturePath);
+	} else {
+		if (albumData.pic_id !== null) {
+			ctx.logger.trace(albumData.pic_id);
+			const pictureData = await ctx.models.pics.findOne({
+				where: {
+					id: albumData.pic_id
+				}
+			});
+			newPicturePath = pictureData.path;
+			newPictureId = albumData.pic_id;
+		}
 	}
 
 
@@ -485,23 +496,13 @@ const updateSong = async ctx => {
 	console.dir(updateOption);
 
 	await Promise.resolve().then(() => new Promise((resolve, reject) => {
-		if (picOption.attachments === undefined) {
-			ff.write(updatedSongData.path, updateOption, (err, data) => {
-				if (err) {
-					reject(err);
-				} else {
-					resolve(data);
-				}
-			});
-		} else {
-			ff.write(updatedSongData.path, {}, picOption, (err, data) => {
-				if (err) {
-					reject(err);
-				} else {
-					resolve(data);
-				}
-			});
-		}
+		ff.write(updatedSongData.path, {}, picOption, (err, data) => {
+			if (err) {
+				reject(err);
+			} else {
+				resolve(data);
+			}
+		});
 	})).then(() => {
 		ctx.status = 200;
 		ctx.body = {
