@@ -515,7 +515,7 @@ const updateSong = async ctx => {
 			}
 		};
 	}).catch(error => {
-		console.error(err);
+		console.error(error);
 		ctx.status = 500;
 		ctx.body = {
 			status: 'error',
