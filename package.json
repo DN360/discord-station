@@ -19,7 +19,6 @@
     "abortcontroller-polyfill": "^1.4.0",
     "archiver": "^3.1.1",
     "bluebird": "^3.7.2",
-    "ffmetadata": "^1.6.0",
     "koa": "^2.11.0",
     "koa-body": "^4.1.1",
     "koa-generic-session": "^2.0.4",
