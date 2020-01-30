@@ -7,7 +7,7 @@ import Router from 'next/router';
 import Link from 'next/link';
 import Grid from '@material-ui/core/Grid';
 import PropTypes from 'prop-types';
-import {Typography} from '@material-ui/core';
+import {Typography, Button} from '@material-ui/core';
 import * as songModule from '../ducks/song';
 import * as albumModule from '../ducks/album';
 import * as playerModule from '../ducks/player';
@@ -75,6 +75,13 @@ const App = props => {
 						<Typography variant="h4" className={classes.title}>
 							{listItems.length === 0 ? 'loading...' : 'Album name: ' + listItems[0].album}
 						</Typography>
+					</Grid>
+					<Grid item xs={12}>
+						<Button fullWidth color="primary" variant="contained" onClick={e => {
+							Router.push(`/api/v1/album/download/${id}`)
+						}}>
+							Download album
+						</Button>
 					</Grid>
 					<InfiniteScroll
 						className={classes.scroller}

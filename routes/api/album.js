@@ -1,4 +1,9 @@
 const KoaRouter = require('koa-router');
+const archiver = require("archiver")
+const path = require("path")
+const fs = require("fs")
+const mm = require('music-metadata');
+const mime = require('mime');
 
 const router = new KoaRouter();
 
@@ -42,6 +47,104 @@ const updateAlbum = async ctx => {
 		album: name
 	};
 };
+
+const downloadAlbum = async ctx => {
+	const {id} = ctx.params;
+	if (!id) {
+		ctx.status = 400;
+		ctx.body = {
+			status: 'error',
+			message: 'no id'
+		};
+		return null;
+	}
+
+	const albumData = await ctx.models.albums.findOne({
+		where: {
+			id,
+			'$songs.status$': 'ready'
+		},
+		attributes: ['id', 'name', 'pic_id', 'created_at', 'updated_at'],
+		include: [
+			{
+				model: ctx.models.songs, attributes: ['id', 'name', 'artist_id', 'status', 'path'], include: [
+					{model: ctx.models.artists, attributes: ['name']}
+				]}
+		]
+	});
+
+	if (albumData) {
+
+
+		const zipper = () => new Promise(async (resolve, reject) => {
+			const zipPath = path.resolve(__dirname, '..', '..', 'tmp', 'album.zip')
+
+			const archive = archiver('zip', {
+				zlib: { level: 9 } // Sets the compression level.
+			});
+
+			const output = fs.createWriteStream(zipPath);
+
+			output.on('close', function() {
+				console.log(archive.pointer() + ' total bytes');
+				console.log('archiver has been finalized and the output file descriptor has closed.');
+				resolve(zipPath);
+			});
+
+			output.on('end', function() {
+				console.log('Data has been drained');
+			});
+
+			archive.on('warning', function(err) {
+				if (err.code === 'ENOENT') {
+					// log warning
+					reject(err);
+				} else {
+					// throw error
+					reject(err);
+				}
+			});
+
+			archive.pipe(output);
+
+			for (const song of albumData.songs) {
+				const metadata = await mm.parseFile(song.path).then(metadata => {
+					return {track: metadata.common.track.no, disk: metadata.common.disk.no};
+				});
+
+				const extname = path.extname(song.path);
+				let filename = song.name + extname;
+				if (metadata.track !== null) {
+					filename = `${String(metadata.track).padStart(2, '0')} - ${filename}`;
+				}
+
+				if (metadata.disk !== null) {
+					filename = `${metadata.disk} - ${filename}`;
+				}
+				const stream = fs.createReadStream(song.path)
+				archive.append(stream, { name: filename });
+				console.log(filename)
+			}
+
+			archive.on('error', function(err) {
+				reject(err);
+			});
+
+			archive.finalize();
+
+		})
+		const zipFile = await zipper()
+		ctx.status = 200;
+		ctx.body = fs.readFileSync(zipFile);
+		ctx.attachment(albumData.name + ".zip");
+	} else {
+		ctx.status = 404;
+		ctx.body = {
+			status: 'error',
+			message: 'album data not found'
+		};
+	}
+}
 
 const getAlbum = async ctx => {
 	const {id} = ctx.params;
@@ -153,6 +256,7 @@ const getAlbumList = async ctx => {
 
 router.get('/', getAlbumList);
 router.get('/:id', getAlbum);
+router.get('/download/:id', downloadAlbum);
 router.post('/:id', updateAlbum);
 
 module.exports = router;
