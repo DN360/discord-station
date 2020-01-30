@@ -11,25 +11,24 @@ const router = new KoaRouter();
 const loginCheck = async (ctx, next) => {
 	if (ctx.session.is_logged_in) {
 		await next();
-	} else {
-		if (ctx.request.query.token) {
-			const userByToken = await ctx.models.users.findOne({
-				where: {
-					uuid: ctx.request.query.token
-				}
-			})
-			if (userByToken) {
-				ctx.session.user_id = userByToken.id;
-				ctx.session.is_admin = userByToken.status === "admin"
+	} else if (ctx.request.query.token) {
+		const userByToken = await ctx.models.users.findOne({
+			where: {
+				uuid: ctx.request.query.token
 			}
-			await next();
-		} else {
-			ctx.status = 401;
-			ctx.body = {
-				status: 'error',
-				message: 'need authorize'
-			};
+		});
+		if (userByToken) {
+			ctx.session.user_id = userByToken.id;
+			ctx.session.is_admin = userByToken.status === 'admin';
 		}
+
+		await next();
+	} else {
+		ctx.status = 401;
+		ctx.body = {
+			status: 'error',
+			message: 'need authorize'
+		};
 	}
 };
 

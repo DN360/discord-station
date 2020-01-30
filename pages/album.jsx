@@ -65,6 +65,7 @@ const App = props => {
 		props.setCueList(listItems, listItems.findIndex(x => x.id === songData.id));
 		props.play();
 	};
+	const stamp = Date.now()
 
 	return (
 		<div>
@@ -93,7 +94,7 @@ const App = props => {
 					>
 						<Grid container>
 							{listItems ? listItems.map(song => (
-								<SongCard key={'song-' + song.id} song={song} cardOnClick={cardOnClick} isPlaying={song.id === playingId}/>
+								<SongCard key={'song-' + song.id} song={song} cardOnClick={cardOnClick} isPlaying={song.id === playingId} stamp={stamp}/>
 							)) : (<Grid item>Loading...</Grid>)
 							}
 						</Grid>

@@ -46,7 +46,7 @@ const nextApp = next({dev: process.env.NODE_ENV === 'development'});
 const routes = require('./routes');
 
 const sequelizeConfig = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'config', 'config.json')));
-console.log(process.env.NODE_ENV)
+console.log(process.env.NODE_ENV);
 
 app.keys = ['discord-station', 'discord-station_secret'];
 

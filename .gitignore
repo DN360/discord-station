@@ -3,4 +3,5 @@
 /.next
 /databases/music_server.sqlite
 /tmp/*
-config/app.config.json
+
+/config/app.config.json

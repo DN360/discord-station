@@ -66,7 +66,7 @@ const SongCard = props => {
 					{props.isPlaying ? (
 						<PlayCircleFilledWhiteOutlined className={classes.playingIcon}/>
 					) : ''}
-					<img className={classes.songPicture} src={songData.pic_id === null || songData.pic_id === undefined ? '/assets/img/noimage.png' : `/api/v1/pic/${songData.pic_id}`}/>
+					<img className={classes.songPicture} src={songData.pic_id === null || songData.pic_id === undefined ? '/assets/img/noimage.png' : `/api/v1/pic/${songData.pic_id}?${props.stamp}`}/>
 				</Grid>
 				<Grid key="song-card-title" item xs={12}>
 					<Tooltip title={songData.title}>
@@ -107,14 +107,13 @@ const SongCard = props => {
 				</MenuItem>
 				<MenuItem onClick={() => {
 					handleClose();
-					fetch(`/api/v1/song/download/${songData.id}`).then(x => x.blob()).then(b => {
-						const url = window.URL.createObjectURL(b);
-						const a = document.createElement('a');
-						a.href = url;
-						document.body.appendChild(a); // we need to append the element to the dom -> otherwise it will not work in firefox
-						a.click();    
-						a.remove();
-					});
+					Router.push(`/show/?id=${songData.id}`, `/show/${songData.id}`);
+				}}
+				>Goto song detail page
+				</MenuItem>
+				<MenuItem onClick={() => {
+					handleClose();
+					Router.push(`/api/v1/song/download/${songData.id}`);
 				}}
 				>Download song
 				</MenuItem>
@@ -126,12 +125,14 @@ const SongCard = props => {
 SongCard.propTypes = {
 	song: PropType.object,
 	cardOnClick: PropType.func.isRequired,
-	isPlaying: PropType.bool
+	isPlaying: PropType.bool,
+	stamp: PropType.number
 };
 
 SongCard.defaultProps = {
 	song: {},
-	isPlaying: false
+	isPlaying: false,
+	stamp: 0
 };
 
 export default SongCard;

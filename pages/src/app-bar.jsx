@@ -100,7 +100,7 @@ const MyAppBar = props => {
 	const addOpen = Boolean(addMenuAnchorEl);
 	const handleClose = type => {
 		switch (type) {
-			case "add":
+			case 'add':
 				setAddMenuAnchorEl(null);
 				break;
 			default:
@@ -112,7 +112,7 @@ const MyAppBar = props => {
 
 	const handleMenu = (event, type) => {
 		switch (type) {
-			case "add":
+			case 'add':
 				setAddMenuAnchorEl(event.currentTarget);
 				break;
 			default:
@@ -216,7 +216,7 @@ const MyAppBar = props => {
 							aria-controls="menu-add"
 							aria-haspopup="true"
 							color="inherit"
-							onClick={e => handleMenu(e, "add")}
+							onClick={e => handleMenu(e, 'add')}
 						>
 							<AddRounded/>
 						</IconButton>
@@ -232,10 +232,10 @@ const MyAppBar = props => {
 								horizontal: 'right'
 							}}
 							open={addOpen}
-							onClose={() => handleClose("add")}
+							onClose={() => handleClose('add')}
 						>
-							<MenuItem onClick={() => Router.push("/add-song")}>Add new song</MenuItem>
-							<MenuItem onClick={() => Router.push("/add-user")}>Add new user</MenuItem>
+							<MenuItem onClick={() => Router.push('/add-song')}>Add new song</MenuItem>
+							<MenuItem onClick={() => Router.push('/add-user')}>Add new user</MenuItem>
 						</Menu>
 						<IconButton
 							aria-label="account of current user"

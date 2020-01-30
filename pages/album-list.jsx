@@ -43,15 +43,15 @@ const App = props => {
 	const playingId = (props.cueList[props.cueIndex] || {id: -1}).id;
 	useEffect(() => {
 		// 絞りターゲットのIDがないのであれば一覧を表示する
-        fetch('/api/v1/album?count=60').then(x => x.json()).then(resp => {
-            setListItems(resp.albums);
-            setNextPage(resp.links.nextPage);
-            setPageEnd(resp.pages.nextPage !== null);
-        });
+		fetch('/api/v1/album?count=60').then(x => x.json()).then(resp => {
+			setListItems(resp.albums);
+			setNextPage(resp.links.nextPage);
+			setPageEnd(resp.pages.nextPage !== null);
+		});
 	}, []);
 
 	useEffect(() => {
-        setListItems(props.albumList);
+		setListItems(props.albumList);
 	}, [props.albumList]);
 
 	useEffect(() => {
@@ -64,65 +64,65 @@ const App = props => {
 		props.play();
 	};
 
-    // ターゲットのリストを表示する
-    return (
-        <div>
-            <Container maxWidth="md" className={classes.root}>
-                <Grid container className={classes.scrollerParent}>
-                    <Grid item xs={12}>
-                        <Typography variant="h4" className={classes.title}>
+	// ターゲットのリストを表示する
+	return (
+		<div>
+			<Container maxWidth="md" className={classes.root}>
+				<Grid container className={classes.scrollerParent}>
+					<Grid item xs={12}>
+						<Typography variant="h4" className={classes.title}>
                             Album List
-                        </Typography>
-                    </Grid>
-                    <InfiniteScroll
-                        className={classes.scroller}
-                        hasMore={pageEnd}
-                        dataLength={listItems.length}
-                        next={() => {
-                            fetch(nextPage).then(x => x.json()).then(resp => {
-                                setListItems(array => [
-                                    ...array,
-                                    ...resp.albums
-                                ]);
-                                setPageEnd(resp.pages.nextPage !== null);
-                                setNextPage(resp.links.nextPage);
-                            });
-                            setPage(page + 1);
-                        }}
-                    >
-                        <TableContainer component={Paper}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>
+						</Typography>
+					</Grid>
+					<InfiniteScroll
+						className={classes.scroller}
+						hasMore={pageEnd}
+						dataLength={listItems.length}
+						next={() => {
+							fetch(nextPage).then(x => x.json()).then(resp => {
+								setListItems(array => [
+									...array,
+									...resp.albums
+								]);
+								setPageEnd(resp.pages.nextPage !== null);
+								setNextPage(resp.links.nextPage);
+							});
+							setPage(page + 1);
+						}}
+					>
+						<TableContainer component={Paper}>
+							<Table>
+								<TableHead>
+									<TableRow>
+										<TableCell>
                                             アルバム名
-                                        </TableCell>
-                                        <TableCell className={classes.countTableHead}>
+										</TableCell>
+										<TableCell className={classes.countTableHead}>
                                             収録曲数
-                                        </TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {
-                                        listItems.map(item => (
-                                            <TableRow key={'album-' + item.id}>
-                                                <TableCell key="albumName">
-                                                    <Link href={`/album?id=${item.id}`} as={`/album/${item.id}`}><a>{item.album}</a></Link>
-                                                </TableCell>
-                                                <TableCell key="albumSongCount">
-                                                    {item.song_count}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    }
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </InfiniteScroll>
-                </Grid>
-            </Container>
-        </div>
-    );
+										</TableCell>
+									</TableRow>
+								</TableHead>
+								<TableBody>
+									{
+										listItems.map(item => (
+											<TableRow key={'album-' + item.id}>
+												<TableCell key="albumName">
+													<Link href={`/album?id=${item.id}`} as={`/album/${item.id}`}><a>{item.album}</a></Link>
+												</TableCell>
+												<TableCell key="albumSongCount">
+													{item.song_count}
+												</TableCell>
+											</TableRow>
+										))
+									}
+								</TableBody>
+							</Table>
+						</TableContainer>
+					</InfiniteScroll>
+				</Grid>
+			</Container>
+		</div>
+	);
 };
 
 App.propTypes = {

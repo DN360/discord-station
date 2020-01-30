@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const KoaRouter = require('koa-router');
 const mm = require('music-metadata');
+const ff = require('ffmetadata')
 const mime = require('mime');
 
 const router = new KoaRouter();
@@ -427,9 +428,10 @@ const updateSong = async ctx => {
 	}
 
 	let newPictureId;
+	let newPicturePath = null;
 
 	if (files.file) {
-		let newPicturePath = path.resolve(process.env.UPLOADDIR, albumData.id + path.extname(files.file.name));
+		newPicturePath = path.resolve(process.env.UPLOADDIR, albumData.id + path.extname(files.file.name));
 		if (albumData.pic_id === null) {
 			const pictureData = await ctx.models.pics.build({
 				path: newPicturePath,
@@ -451,10 +453,12 @@ const updateSong = async ctx => {
 				}
 			});
 			newPicturePath = pictureData.path;
+			newPictureId = albumData.pic_id;
 		}
 
 		fs.copyFileSync(files.file.path, newPicturePath);
 	}
+
 
 	await ctx.models.songs.update({
 		name: title,
@@ -467,10 +471,57 @@ const updateSong = async ctx => {
 		}
 	});
 
-	ctx.status = 200;
-	ctx.body = {
-		status: 'success'
-	};
+	const updateOption = {
+		title,
+		artist: artistData.name,
+		album: albumData.name
+	}
+
+	const picOption = {}
+
+	if (newPicturePath !== null) {
+		picOption['attachments'] = [newPicturePath];
+	}
+	console.dir(updateOption);
+
+	await Promise.resolve().then(() => new Promise((resolve, reject) => {
+		if (picOption.attachments === undefined) {
+			ff.write(updatedSongData.path, updateOption, (err, data) => {
+				if (err) {
+					reject(err);
+				} else {
+					resolve(data);
+				}
+			});
+		} else {
+			ff.write(updatedSongData.path, {}, picOption, (err, data) => {
+				if (err) {
+					reject(err);
+				} else {
+					resolve(data);
+				}
+			});
+		}
+	})).then(() => {
+		ctx.status = 200;
+		ctx.body = {
+			status: 'success',
+			data: {
+				title,
+				artist: artistData.name,
+				album: albumData.name,
+				pic_id: newPictureId
+			}
+		};
+	}).catch(error => {
+		console.error(err);
+		ctx.status = 500;
+		ctx.body = {
+			status: 'error',
+			message: 'cannot rewrite music metadata.'
+		};
+	});
+
 	if (files.file) {
 		fs.unlinkSync(files.file.path);
 	}
@@ -813,13 +864,24 @@ const downloadSong = async ctx => {
 			id,
 			status: 'ready'
 		},
-		attributes: ['path']
+		attributes: ['path', 'name']
+	});
+	const metadata = await mm.parseFile(songData.path).then(metadata => {
+		return {track: metadata.common.track.no, disk: metadata.common.disk.no};
 	});
 	if (songData && fs.existsSync(songData.path)) {
 		ctx.body = fs.readFileSync(songData.path);
 		const extname = path.extname(songData.path);
-		ctx.attachment(songData.name + extname);
+		let filename = songData.name + extname;
+		if (metadata.track !== null) {
+			filename = `${String(metadata.track).padStart(2, '0')} - ${filename}`;
+		}
 
+		if (metadata.disk !== null) {
+			filename = `${metadata.disk} - ${filename}`;
+		}
+
+		ctx.attachment(filename);
 	} else {
 		ctx.status = 404;
 		ctx.body = {
@@ -827,7 +889,7 @@ const downloadSong = async ctx => {
 			message: 'file not found'
 		};
 	}
-}
+};
 
 router.post('/', createSong);
 router.patch('/:id', patchSong);

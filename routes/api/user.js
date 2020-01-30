@@ -180,7 +180,7 @@ const updateUser = async ctx => {
 	const {files} = ctx.request;
 
 	if (files && files.file) {
-		if (files.file.type.indexOf('image') < 0) {
+		if (!files.file.type.includes('image')) {
 			ctx.status = 400;
 			ctx.body = {
 				status: 'error',

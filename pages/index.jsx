@@ -57,6 +57,8 @@ const App = props => {
 		props.play();
 	};
 
+	const stamp = Date.now()
+
 	return (
 		<div>
 			<Container maxWidth="md" className={classes.root}>
@@ -90,7 +92,7 @@ const App = props => {
 					>
 						<Grid container>
 							{songs ? songs.map(song => (
-								<SongCard key={song.id} song={song} cardOnClick={cardOnClick} isPlaying={song.id === playingId}/>
+								<SongCard key={song.id} song={song} cardOnClick={cardOnClick} isPlaying={song.id === playingId} stamp={stamp}/>
 							)) : (<Grid item>Loading...</Grid>)
 							}
 						</Grid>
