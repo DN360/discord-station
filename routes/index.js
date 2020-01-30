@@ -31,7 +31,8 @@ router.use('/api/v1', apiRouter.routes(), apiRouter.allowedMethods())
 		ctx.req.isLoggedIn = ctx.session.is_logged_in;
 		ctx.req.isAdmin = ctx.session.is_admin;
 		ctx.req.userId = ctx.session.user_id;
-		await ctx.nextApp.render(ctx.req, ctx.res, '/artist', {
+		const renderPage = Number(ctx.params.id) ? '/artist' : '/artist-list'
+		await ctx.nextApp.render(ctx.req, ctx.res, renderPage, {
 			id: Number(ctx.params.id)
 		});
 		ctx.respond = false;
@@ -40,7 +41,8 @@ router.use('/api/v1', apiRouter.routes(), apiRouter.allowedMethods())
 		ctx.req.isLoggedIn = ctx.session.is_logged_in;
 		ctx.req.isAdmin = ctx.session.is_admin;
 		ctx.req.userId = ctx.session.user_id;
-		await ctx.nextApp.render(ctx.req, ctx.res, '/album', {
+		const renderPage = Number(ctx.params.id) ? '/album' : '/album-list'
+		await ctx.nextApp.render(ctx.req, ctx.res, renderPage, {
 			id: Number(ctx.params.id)
 		});
 		ctx.respond = false;

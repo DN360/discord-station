@@ -45,28 +45,16 @@ const App = props => {
 	useEffect(() => {
 		// 絞りターゲットのIDがないのであれば一覧を表示する
 		setListItems([]);
-		if (id === null) {
-			fetch('/api/v1/artist?count=60').then(x => x.json()).then(resp => {
-				setListItems(resp.artists);
-				setNextPage(resp.links.nextPage);
-				setPageEnd(resp.pages.nextPage !== null);
-			});
-		} else {
-			fetch(`/api/v1/song?count=60&artistid=${id}`).then(x => x.json()).then(resp => {
-				setListItems(resp.songs);
-				setNextPage(resp.links.nextPage);
-				setPageEnd(resp.pages.nextPage !== null);
-			});
-		}
+		fetch(`/api/v1/song?count=60&artistid=${id}`).then(x => x.json()).then(resp => {
+			setListItems(resp.songs);
+			setNextPage(resp.links.nextPage);
+			setPageEnd(resp.pages.nextPage !== null);
+		});
 	}, [id]);
 
 	useEffect(() => {
-		if (id === null) {
-			setListItems(props.artistList);
-		} else {
-			setListItems(props.songList);
-		}
-	}, [id, props.artistList, props.songList]);
+		setListItems(props.songList);
+	}, [props.songList]);
 
 	useEffect(() => {
 		setNextPage(props.queryNextPage);
@@ -77,69 +65,6 @@ const App = props => {
 		props.setCueList(listItems, listItems.findIndex(x => x.id === songData.id));
 		props.play();
 	};
-
-	if (id === null) {
-		// ターゲットのリストを表示する
-		return (
-			<div>
-				<Container maxWidth="md" className={classes.root}>
-					<Grid container className={classes.scrollerParent}>
-						<Grid item xs={12}>
-							<Typography variant="h4" className={classes.title}>
-                                Artist List
-							</Typography>
-						</Grid>
-						<InfiniteScroll
-							className={classes.scroller}
-							hasMore={pageEnd}
-							dataLength={listItems.length}
-							next={() => {
-								fetch(nextPage).then(x => x.json()).then(resp => {
-									setListItems(array => [
-										...array,
-										...resp.artists
-									]);
-									setPageEnd(resp.pages.nextPage !== null);
-									setNextPage(resp.links.nextPage);
-								});
-								setPage(page + 1);
-							}}
-						>
-							<TableContainer component={Paper}>
-								<Table>
-									<TableHead>
-										<TableRow>
-											<TableCell>
-                                                アーティスト名
-											</TableCell>
-											<TableCell className={classes.countTableHead}>
-                                                収録曲数
-											</TableCell>
-										</TableRow>
-									</TableHead>
-									<TableBody>
-										{
-											listItems.map(item => (
-												<TableRow key={'artist-' + item.id}>
-													<TableCell key="artistName">
-														<Link href={`/artist?id=${item.id}`} as={`/artist/${item.id}`}><a>{item.artist}</a></Link>
-													</TableCell>
-													<TableCell key="artistSongCount">
-														{item.song_count}
-													</TableCell>
-												</TableRow>
-											))
-										}
-									</TableBody>
-								</Table>
-							</TableContainer>
-						</InfiniteScroll>
-					</Grid>
-				</Container>
-			</div>
-		);
-	}
-	// IDで絞った曲を表示する
 
 	return (
 		<div>
@@ -237,9 +162,9 @@ App.getInitialProps = async ({store, req, res, query}) => {
 	}
 
 	return {
-		id: Number(query.id) || null,
-		target: Number(query.id) ? 'song' : 'artist',
-		extraSearchQuery: Number(query.id) ? `artistid=${query.id}` : ''
+		id: Number(query.id),
+		target: 'song',
+		extraSearchQuery: `artistid=${query.id}`
 	};
 };
 

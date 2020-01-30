@@ -177,7 +177,7 @@ const MyAppBar = props => {
 								<LibraryMusicRounded/>
 							</IconButton>
 						</Link>
-						<Link href="/album">
+						<Link href="/album-list" as="/album">
 							<IconButton
 								aria-label="menu of album"
 								aria-controls="album-site"
@@ -187,7 +187,7 @@ const MyAppBar = props => {
 								<AlbumRounded/>
 							</IconButton>
 						</Link>
-						<Link href="/artist">
+						<Link href="/artist-list" as="/artist">
 							<IconButton
 								aria-label="menu of artist"
 								aria-controls="artist-site"
