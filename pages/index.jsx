@@ -65,6 +65,12 @@ const App = props => {
 						<Typography variant="h4" className={classes.title}>
 							Recently uploaded song list.
 						</Typography>
+						<Typography variant="body1" className={classes.title}>
+							To open song menu, right click or long tap on the song card image.
+						</Typography>
+						<Typography variant="body1" className={classes.title}>
+							To load more songs, scroll to the end of this page.
+						</Typography>
 					</Grid>
 					<InfiniteScroll
 						className={classes.scroller}

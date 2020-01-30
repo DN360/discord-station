@@ -9,13 +9,9 @@
             "window",
             "document",
             "fetch",
-<<<<<<< HEAD
             "alert",
             "FormData",
             "AbortController"
-=======
-            "alert"
->>>>>>> ffa0e5444e64b2c0f25b0f7e9ef3bfb93b38750b
         ]
     }
 }

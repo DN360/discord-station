@@ -797,11 +797,44 @@ const deleteSongMetadata = async ctx => {
 	}
 };
 
+const downloadSong = async ctx => {
+	const {id} = ctx.params;
+	if (!id) {
+		ctx.status = 400;
+		ctx.body = {
+			status: 'error',
+			message: 'no file attached'
+		};
+		return null;
+	}
+
+	const songData = await ctx.models.songs.findOne({
+		where: {
+			id,
+			status: 'ready'
+		},
+		attributes: ['path']
+	});
+	if (songData && fs.existsSync(songData.path)) {
+		ctx.body = fs.readFileSync(songData.path);
+		const extname = path.extname(songData.path);
+		ctx.attachment(songData.name + extname);
+
+	} else {
+		ctx.status = 404;
+		ctx.body = {
+			status: 'error',
+			message: 'file not found'
+		};
+	}
+}
+
 router.post('/', createSong);
 router.patch('/:id', patchSong);
 router.put('/:id', updateSong);
 router.get('/:id', getSong);
 router.get('/meta/:id', getSongMetadata);
+router.get('/download/:id', downloadSong);
 router.get('/continue/list', getContinueSongList);
 router.get('/random/list', getRandomSongList);
 router.get('/', getSongList);

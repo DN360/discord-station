@@ -27,6 +27,18 @@ router.use('/api/v1', apiRouter.routes(), apiRouter.allowedMethods())
 			};
 		}
 	})
+	.get('/artist', async ctx => {
+		ctx.req.isLoggedIn = ctx.session.is_logged_in;
+		ctx.req.isAdmin = ctx.session.is_admin;
+		ctx.req.userId = ctx.session.user_id;
+		await ctx.nextApp.render(ctx.req, ctx.res, '/artist-list');
+	})
+	.get('/album', async ctx => {
+		ctx.req.isLoggedIn = ctx.session.is_logged_in;
+		ctx.req.isAdmin = ctx.session.is_admin;
+		ctx.req.userId = ctx.session.user_id;
+		await ctx.nextApp.render(ctx.req, ctx.res, '/album-list');
+	})
 	.get('/artist/:id', async ctx => {
 		ctx.req.isLoggedIn = ctx.session.is_logged_in;
 		ctx.req.isAdmin = ctx.session.is_admin;
@@ -38,6 +50,7 @@ router.use('/api/v1', apiRouter.routes(), apiRouter.allowedMethods())
 		ctx.respond = false;
 	})
 	.get('/album/:id', async ctx => {
+		console.log(ctx.params)
 		ctx.req.isLoggedIn = ctx.session.is_logged_in;
 		ctx.req.isAdmin = ctx.session.is_admin;
 		ctx.req.userId = ctx.session.user_id;

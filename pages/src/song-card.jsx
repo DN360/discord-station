@@ -105,6 +105,19 @@ const SongCard = props => {
 				}}
 				>Goto this artist list
 				</MenuItem>
+				<MenuItem onClick={() => {
+					handleClose();
+					fetch(`/api/v1/song/download/${songData.id}`).then(x => x.blob()).then(b => {
+						const url = window.URL.createObjectURL(b);
+						const a = document.createElement('a');
+						a.href = url;
+						document.body.appendChild(a); // we need to append the element to the dom -> otherwise it will not work in firefox
+						a.click();    
+						a.remove();
+					});
+				}}
+				>Download song
+				</MenuItem>
 			</Menu>
 		</Grid>
 	);

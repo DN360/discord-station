@@ -78,7 +78,7 @@ const start = async () => {
 			try {
 				await next();
 			} catch (error) {
-				ctx.logger.error(error);
+				console.error(error);
 			}
 		})
 		.use(koaLogger())

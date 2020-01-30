@@ -32,6 +32,8 @@ const getUserData = async ctx => {
 		id = ctx.session.user_id;
 	}
 
+	id = Number(id);
+
 	if (id !== ctx.session.user_id && !ctx.session.is_admin) {
 		ctx.status = 403;
 		ctx.body = {

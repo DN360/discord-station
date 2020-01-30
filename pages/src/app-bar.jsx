@@ -91,19 +91,33 @@ const useStyles = makeStyles(theme => ({
 
 const MyAppBar = props => {
 	const classes = useStyles();
-	const [anchorEl, setAnchorEl] = useState(null);
+	const [userMenuAnchorEl, setUserMenuAnchorEl] = useState(null);
+	const [addMenuAnchorEl, setAddMenuAnchorEl] = useState(null);
 	const [searchQuery, setSearchQuery] = useState('');
 	const searchQueryRef = useRef(searchQuery);
 	const searchTokenRef = useRef('');
-	const open = Boolean(anchorEl);
-	const handleClose = () => {
-		setAnchorEl(null);
+	const userOpen = Boolean(userMenuAnchorEl);
+	const addOpen = Boolean(addMenuAnchorEl);
+	const handleClose = type => {
+		switch (type) {
+			case "add":
+				setAddMenuAnchorEl(null);
+				break;
+			default:
+				setUserMenuAnchorEl(null);
+		}
 	};
 
 	const {target, extraSearchQuery} = props;
 
-	const handleMenu = event => {
-		setAnchorEl(event.currentTarget);
+	const handleMenu = (event, type) => {
+		switch (type) {
+			case "add":
+				setAddMenuAnchorEl(event.currentTarget);
+				break;
+			default:
+				setUserMenuAnchorEl(event.currentTarget);
+		}
 	};
 
 	const searchEventHandler = (token, refToken, refQuery) => {
@@ -197,13 +211,32 @@ const MyAppBar = props => {
 								<PeopleAltRounded/>
 							</IconButton>
 						</Link>
-						<Link href="/add-song">
-							<IconButton
-								color="inherit"
-							>
-								<AddRounded/>
-							</IconButton>
-						</Link>
+						<IconButton
+							aria-label="add menu"
+							aria-controls="menu-add"
+							aria-haspopup="true"
+							color="inherit"
+							onClick={e => handleMenu(e, "add")}
+						>
+							<AddRounded/>
+						</IconButton>
+						<Menu
+							id="menu-add"
+							anchorEl={addMenuAnchorEl}
+							anchorOrigin={{
+								vertical: 'top',
+								horizontal: 'right'
+							}}
+							transformOrigin={{
+								vertical: 'top',
+								horizontal: 'right'
+							}}
+							open={addOpen}
+							onClose={() => handleClose("add")}
+						>
+							<MenuItem onClick={() => Router.push("/add-song")}>Add new song</MenuItem>
+							<MenuItem onClick={() => Router.push("/add-user")}>Add new user</MenuItem>
+						</Menu>
 						<IconButton
 							aria-label="account of current user"
 							aria-controls="menu-account"
@@ -215,7 +248,7 @@ const MyAppBar = props => {
 						</IconButton>
 						<Menu
 							id="menu-account"
-							anchorEl={anchorEl}
+							anchorEl={userMenuAnchorEl}
 							anchorOrigin={{
 								vertical: 'top',
 								horizontal: 'right'
@@ -224,7 +257,7 @@ const MyAppBar = props => {
 								vertical: 'top',
 								horizontal: 'right'
 							}}
-							open={open}
+							open={userOpen}
 							onClose={handleClose}
 						>
 							<MenuItem onClick={LinkToProfileMenuItemOnClick}>Profile</MenuItem>
