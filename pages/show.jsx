@@ -118,8 +118,8 @@ const App = props => {
 		});
     }
     
-    const searchArtist = e => {
-        setArtist(e.target.value)
+    const searchArtist = (_e, value) => {
+        setArtist(value)
         const uuid = Date.now()
         searchUUID.current = uuid
         setTimeout((q, sendUUID) => {
@@ -129,11 +129,11 @@ const App = props => {
             fetch(`/api/v1/artist/?count=60&q=${q}`).then(x => x.json()).then(d => {
                 setArtistList(d.artists.map(x => x.artist))
             })
-        }, 1000, e.target.value, uuid)
+        }, 1000, value, uuid)
     }
 
-    const searchAlbum = e => {
-        setAlbum(e.target.value)
+    const searchAlbum = (_e, value) => {
+        setAlbum(value)
         const uuid = Date.now()
         searchUUID.current = uuid
         setTimeout((q, sendUUID) => {
@@ -143,7 +143,7 @@ const App = props => {
             fetch(`/api/v1/album/?count=60&q=${q}`).then(x => x.json()).then(d => {
                 setAlbumList(d.albums.map(x => x.album))
             })
-        }, 1000, e.target.value, uuid)
+        }, 1000, value, uuid)
 
     }
 
@@ -178,8 +178,9 @@ const App = props => {
                                 freeSolo
                                 options={artistList}
                                 value={artist}
+                                onInputChange={searchArtist}
                                 renderInput={params => (
-                                    <TextField {...params} fullWidth label="Song Artist" value={artist} onChange={searchArtist} variant="outlined" />
+                                    <TextField {...params} fullWidth label="Song Artist" value={artist} variant="outlined" />
                                 )}/>
                         </Grid>
                         <Grid item xs={12}>
@@ -189,8 +190,9 @@ const App = props => {
                                 freeSolo
                                 options={albumList}
                                 value={album}
+                                onInputChange={searchAlbum}
                                 renderInput={params => (
-                                    <TextField {...params} fullWidth label="Song Album" value={album} onChange={searchAlbum} variant="outlined" />
+                                    <TextField {...params} fullWidth label="Song Album" value={album} variant="outlined" />
                                 )}/>
                             
                         </Grid>
