@@ -25,7 +25,15 @@ const useStyles = makeStyles(theme => ({
 		width: '100%',
 		marginLeft: theme.spacing(1),
 		marginRight: theme.spacing(1)
-	}
+	},
+    inputButton: {
+        opacity: 0,
+        appearance: 'none',
+        position: 'absolute',
+        display: 'block',
+        width: '100%',
+        height: '100%'
+    }
 }));
 
 const App = props => {
@@ -183,14 +191,10 @@ const App = props => {
 								<img className={classes.img} src={imageURL} onClick={() => document.querySelector('#fileUploadButton').click()}/>
 							)}
 						</div>
-						<input type="file" id="fileUploadButton" onChange={e => fileUploadButtonOnClick(e)}/>
-					</Grid>
-					<Grid item xs={12}>
-						<Typography
-							variant="caption"
-						>
-                        If you want to change your password, please fill input fields below here.
-						</Typography>
+						<Button fullWidth color="primary" variant="contained">
+							<input className={classes.inputButton} type="file" id="fileUploadButton" onChange={e => fileUploadButtonOnClick(e)}/>
+							User image select...
+						</Button>
 					</Grid>
 					<Grid item md={6} xs={6}>
 						<TextField

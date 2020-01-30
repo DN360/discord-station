@@ -14,7 +14,15 @@ const useStyles = makeStyles(theme => ({
 	},
 	table: {
 		minWidth: '650px'
-	}
+	},
+    inputButton: {
+        opacity: 0,
+        appearance: 'none',
+        position: 'absolute',
+        display: 'block',
+        width: '100%',
+        height: '100%'
+    }
 }));
 
 const AddSong = () => {
@@ -114,12 +122,13 @@ const AddSong = () => {
 	return (
 		<Grid container className={classes.root}>
 			<Grid item xs={12}>
-				<Typography variant="caption">
-                    To upload songs, click button below.
-				</Typography>
-			</Grid>
-			<Grid item xs={12}>
-				<input multiple type="file" accept="audio/*" onChange={fileButtonOnChange}/>
+				<Button fullWidth color="secondary" variant="contained">
+				<input className={classes.inputButton} multiple type="file" accept="audio/*" onChange={fileButtonOnChange}/>
+					Upload songs select...
+				</Button>
+                        
+
+				
 			</Grid>
 			<TableContainer component={Paper} className={classes.paper}>
 				<Table size="small" className={classes.table}>

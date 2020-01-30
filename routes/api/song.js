@@ -3,7 +3,6 @@ const path = require('path');
 const fs = require('fs');
 const KoaRouter = require('koa-router');
 const mm = require('music-metadata');
-const ff = require('ffmetadata')
 const mime = require('mime');
 
 const router = new KoaRouter();
@@ -482,51 +481,169 @@ const updateSong = async ctx => {
 		}
 	});
 
-	const updateOption = {
-		title,
-		artist: artistData.name,
-		album: albumData.name
-	}
-
-	const picOption = {}
-
-	if (newPicturePath !== null) {
-		picOption['attachments'] = [newPicturePath];
-	}
-	console.dir(updateOption);
-
-	await Promise.resolve().then(() => new Promise((resolve, reject) => {
-		ff.write(updatedSongData.path, {}, picOption, (err, data) => {
-			if (err) {
-				reject(err);
-			} else {
-				resolve(data);
-			}
-		});
-	})).then(() => {
-		ctx.status = 200;
-		ctx.body = {
-			status: 'success',
-			data: {
-				title,
-				artist: artistData.name,
-				album: albumData.name,
-				pic_id: newPictureId
-			}
-		};
-	}).catch(error => {
-		console.error(error);
-		ctx.status = 500;
-		ctx.body = {
-			status: 'error',
-			message: 'cannot rewrite music metadata.'
-		};
-	});
+	ctx.status = 200;
+	ctx.body = {
+		status: 'success',
+		data: {
+			title,
+			artist: artistData.name,
+			album: albumData.name,
+			pic_id: newPictureId
+		}
+	};
 
 	if (files.file) {
 		fs.unlinkSync(files.file.path);
 	}
 };
+
+const reuploadSong = async ctx => {
+	const {id} = ctx.params
+	if (!ctx.request.files || !ctx.request.files.file) {
+		ctx.status = 400;
+		ctx.body = {
+			status: 'error',
+			message: 'no file attached'
+		};
+		return;
+	}
+
+	const updatedSongData = await ctx.models.songs.findOne({
+		where: {
+			id
+		}
+	});
+
+	if (!updatedSongData) {
+		ctx.status = 404;
+		ctx.body = {
+			status: 'error',
+			message: 'not found'
+		};
+		return;
+	}
+
+
+	if (!ctx.request.files.file.type.includes('audio')) {
+		ctx.status = 400;
+		ctx.body = {
+			status: 'error',
+			message: 'Upload file is not audio file'
+		};
+		fs.unlinkSync(ctx.request.files.file.path);
+		return;
+	}
+
+	let tmpPath;
+	await ctx.helper.mkdirSync(path.resolve(__dirname, '..', '..', process.env.UPLOADDIR)).then(createdPath => {
+		const newFileName = Date.now() + path.extname(ctx.request.files.file.name);
+		const copyToPath = path.join(createdPath, newFileName);
+		tmpPath = ctx.request.files.file.path + path.extname(ctx.request.files.file.name);
+		fs.copyFileSync(ctx.request.files.file.path, tmpPath);
+		ctx.logger.trace(tmpPath);
+		return {copyToPath, createdPath, tmpPath};
+	}).then(({copyToPath, createdPath, tmpPath}) => {
+		return mm.parseFile(tmpPath)
+			.then(metadata => {
+				const {title, artist, album, picture: pictures} = metadata.common;
+				ctx.logger.trace(`Title: ${title}, Artist: ${artist}, Album: ${album}, Album Cover Image Length: ${pictures === undefined ? 0 : pictures.length}`);
+				return {copyToPath, title, artist, album, pictures: pictures === undefined ? [] : pictures, createdPath, tmpPath};
+			})
+			.catch(error => {
+				ctx.logger.error(error);
+				ctx.status = 500;
+				ctx.body = {
+					status: 'error',
+					message: 'Cannot read metadata from upload file',
+					error
+				};
+			});
+	}).then(({title, artist, album, copyToPath, pictures, createdPath, tmpPath}) => {
+		if (title !== undefined && artist !== undefined && album !== undefined) {
+			return {title, artist, album, copyToPath, pictures, createdPath, tmpPath, status: 'ready'};
+		}
+
+		return {
+			status: 'error',
+			message: `Upload file does'nt have metadata of ${title ? '':'title '}${album ? '':'album '}${artist ? '':'artist '} data.`
+		};
+	}).then(async ({copyToPath, title, artist, album, pictures, createdPath, tmpPath, status, message}) => {
+		let pictureName;
+		let pictureBuf;
+
+		if (status === 'error') {
+			ctx.status = 400;
+			ctx.message = message
+			return;
+		}
+
+		if (status === 'ready') {
+			if (pictures.length > 0) {
+				const picture = pictures[0];
+				const extname = '.' + mime.getExtension(picture.format);
+				pictureBuf = picture.data;
+				pictureName = extname;
+			}
+
+			const {songInstanceData, artistData, albumData, pictureData} = await insertToDB({ctx, album, artist, pictureName, createdPath, pictureBuf, title, copyToPath, status});
+
+
+			return ctx.models.songs.update({
+				name: songInstanceData.name,
+				artist_id: artistData.id,
+				album_id: albumData.id,
+				pic_id: pictureData.id,
+				path: songInstanceData.path
+			}, {
+				where: {
+					id
+				}
+			}).then(() => {
+				ctx.status = 200;
+				ctx.body = {
+					status: 'success',
+					message: 'update',
+					dest: songInstanceData.path,
+					data: {
+						title: songInstanceData.name,
+						artist: artistData.name,
+						album: albumData.name,
+						song_id: id,
+						pic_id: pictureData ? pictureData.id : undefined,
+						user_id: ctx.session.user_id,
+						status
+					}
+				};
+				fs.copyFileSync(tmpPath, copyToPath);
+				fs.unlinkSync(updatedSongData.path);
+			}).catch(error => {
+				const isUniqueError = error.name === 'SequelizeUniqueConstraintError';
+				if (!isUniqueError) {
+					ctx.logger.error(error);
+				}
+
+				ctx.status = isUniqueError ? 400 : 500;
+				if (!isUniqueError) {
+					throw error
+				}
+				ctx.body = {
+					status: 'error',
+					message: 'Cannot update song data to database' + (isUniqueError ? ', submit song is already in database' : '')
+				};
+			});
+		}
+	}).catch(error => {
+		console.error(error);
+		ctx.status = 500;
+		ctx.body = {
+			status: 'error',
+			message: 'Cannot create upload file',
+			error
+		};
+	});
+	fs.unlinkSync(ctx.request.files.file.path);
+	fs.unlinkSync(tmpPath);
+}
 
 const getContinueSongList = async ctx => {
 	const whereQuery = {
@@ -894,6 +1011,7 @@ const downloadSong = async ctx => {
 
 router.post('/', createSong);
 router.patch('/:id', patchSong);
+router.put('/reupload/:id', reuploadSong);
 router.put('/:id', updateSong);
 router.get('/:id', getSong);
 router.get('/meta/:id', getSongMetadata);

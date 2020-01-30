@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useRef} from 'react';
 import PropType from 'prop-types';
+import Router from 'next/router';
 import {makeStyles} from '@material-ui/styles';
 import {Grid, Typography, Container, TextField, Button, Snackbar} from '@material-ui/core';
 import {Autocomplete} from '@material-ui/lab'
@@ -16,9 +17,17 @@ const useStyles = makeStyles(theme => ({
         display: 'block',
         width: '100%'
     },
-    fileInputButton: {
+    inputButton: {
+        opacity: 0,
+        appearance: 'none',
+        position: 'absolute',
         display: 'block',
-        width: '100%'
+        width: '100%',
+        height: '100%'
+    },
+    gridrow: {
+        marginTop: theme.spacing(1),
+        marginBottom: theme.spacing(1)
     }
 }));
 
@@ -54,6 +63,43 @@ const App = props => {
             }
         })
     }, [id]);
+
+    const fileReuploadButtonOnClick = e => {
+        const {files} = e.target;
+		if (!files || files.length === 0) {
+			setSnackMessage('File canceled');
+			setOpen(true);
+			return;
+		}
+
+		const [file] = files;
+
+		const formData = new FormData();
+		formData.append('file', file);
+		formData.append('title', songData.title);
+		formData.append('artist', songData.artist);
+		formData.append('album', songData.album);
+		fetch(`/api/v1/song/reupload/${id}`, {
+			method: 'PUT',
+			body: formData
+		}).then(x => x.json()).then(resp => {
+			if (resp.status === 'error') {
+				setSnackMessage('Uploaded file is not valid music.');
+				setOpen(true);
+			} else {
+				setSnackMessage('Song updated successfully.');
+				setOpen(true);
+				setTitle(resp.data.title);
+				setAlbum(resp.data.album);
+				setArtist(resp.data.artist);
+				setPic(`/api/v1/pic/${resp.data.pic_id}?${Date.now()}`);
+			}
+		}).catch(error => {
+			setSnackMessage('Cannot upload file.');
+			setOpen(true);
+			throw error;
+		});
+    }
 
 	const fileUploadButtonOnClick = e => {
 		const {files} = e.target;
@@ -163,7 +209,10 @@ const App = props => {
                             <img className={classes.albumPic} src={pic} />
                         </Grid>
                         <Grid item xs={12}>
-                        <input className={classes.fileInputButton} type="file" id="fileUploadButton" onChange={e => fileUploadButtonOnClick(e)}/>
+                            <Button fullWidth color="secondary" variant="contained">
+                            <input className={classes.inputButton} type="file" id="fileUploadButton" onChange={e => fileUploadButtonOnClick(e)}/>
+                                Picture select...
+                            </Button>
                         </Grid>
                     </Grid>
                 </Grid>
@@ -198,8 +247,41 @@ const App = props => {
                         </Grid>
                     </Grid>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid className={classes.gridrow} item xs={12}>
                     <Button fullWidth color="primary" variant="contained" onClick={saveButtonOnClick}>Save</Button>
+                </Grid>
+                <Grid className={classes.gridrow} item xs={12}>
+                    <Button fullWidth color="secondary" variant="contained">
+                        <input className={classes.inputButton} type="file" id="fileReuploadButton" onChange={e => fileReuploadButtonOnClick(e)}/>
+                        Song file Reupload
+                    </Button>
+                </Grid>
+                <Grid className={classes.gridrow} item xs={12}>
+                    <Button fullWidth color="secondary" variant="contained" onClick={() => {
+                        Router.push(`/api/v1/song/download/${songData.id}`);
+    				}}>
+                        Download song
+                    </Button>
+                </Grid>
+                <Grid className={classes.gridrow} item xs={12}>
+                    <Button fullWidth color="red" variant="contained" onClick={() => {
+                        fetch(`/api/v1/song/${id}`, {
+                            method: 'DELETE'
+                        }).then(x => x.json()).then(resp => {
+                            if (resp.status === 'error') {
+                                setSnackMessage(d.message);
+                                setOpen(true);
+                            } else {
+                                Router.back();
+                            }
+                        }).catch(error => {
+                            setSnackMessage('Cannot delete song.');
+                            setOpen(true);
+                            throw error;
+                        });
+    				}}>
+                        Delete song
+                    </Button>
                 </Grid>
 			</Grid>
 			<Snackbar
