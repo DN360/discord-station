@@ -12,7 +12,7 @@ module.exports = {
     instances: 1,
     autorestart: true,
     watch: ["routes", "app.js", "models", "libs/helper.js"],
-    mode: "fork",
+    exec_mode: "fork",
     max_memory_restart: '1G',
     env: {
       NODE_ENV: 'development',
