@@ -9515,9 +9515,9 @@ symbol-observable@^1.2.0:
   integrity sha512-e900nM8RRtGhlV36KGEU9k65K3mPb1WV70OdjfxlG2EAuM1noi/E/BaW/uMhL7bPEssK8QV57vN3esixjUvcXQ==
 
 systeminformation@^4.14.16:
-  version "4.19.4"
-  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-4.19.4.tgz#c1cb59a18693c60b107585cd32227381fa348277"
-  integrity sha512-dmJRp+gWzqi6zHWZweFoMSYQmtdKx3tqlNw/HCoZyK8HJg3g3o5IiMQ7VjUe7w7IYx9N2DDLwzD+8Epq211Qyg==
+  version "4.30.6"
+  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-4.30.6.tgz#b56074968f2ea28ac118f23221c449b0f763db22"
+  integrity sha512-NV7zo9NU7fWSuiCORZmMLe90cFrrTS6jfalrQ0/5B7JGQ2ei15c2gmfICBwWdmviyv/FXAFVReySxOtDDkppqw==
 
 table@^5.2.3:
   version "5.4.1"
