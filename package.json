@@ -26,7 +26,7 @@
     "koa-logger": "^3.2.1",
     "koa-range": "^0.3.0",
     "koa-router": "^8.0.6",
-    "log4js": "^6.1.0",
+    "log4js": "^6.4.0",
     "mime": "^2.4.4",
     "mkdirp": "^1.0.3",
     "music-metadata": "^6.3.0",
